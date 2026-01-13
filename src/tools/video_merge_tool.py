@@ -145,7 +145,7 @@ def merge_videos_from_urls(video_urls: List[str], output_dir: Optional[str] = No
         # 如果启用了自动上传且上传工具可用
         if auto_upload and upload_and_get_url:
             try:
-                update_progress(95, "正在上传到对象存储...")
+                print("正在上传到对象存储... (95%)")
                 print("开始上传拼接后的视频到对象存储...")
                 # 生成唯一的文件名
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -159,7 +159,7 @@ def merge_videos_from_urls(video_urls: List[str], output_dir: Optional[str] = No
                 result["video_key"] = f"videos/{file_name}"
                 result["message"] = "视频拼接并上传成功"
 
-                update_progress(100, "视频上传成功")
+                print("视频上传成功 (100%)")
                 print(f"视频上传成功: {signed_url}")
 
             except Exception as upload_error:
