@@ -1,0 +1,125 @@
+<!--index.wxml-->
+<view class="container">
+  <!-- 标题 -->
+  <view class="header">
+    <text class="header-title">天虹紧固件</text>
+    <text class="header-subtitle">AI视频生成系统</text>
+  </view>
+
+  <!-- 产品名称 -->
+  <view class="card">
+    <view class="card-title">产品信息</view>
+    <view class="form-item">
+      <text class="form-label">产品名称 *</text>
+      <input
+        class="product-name-input"
+        placeholder="请输入产品名称"
+        placeholder-style="font-size: 32rpx; color: #999;"
+        value="{{productName}}"
+        bindinput="onProductNameInput"
+        maxlength="50"
+      />
+    </view>
+
+    <!-- 主题选择 -->
+    <view class="form-item">
+      <text class="form-label">宣传主题</text>
+      <view class="tag-group">
+        <text
+          class="tag {{theme === item ? 'active' : ''}}"
+          wx:for="{{themes}}"
+          wx:key="*this"
+          bindtap="onThemeSelect"
+          data-theme="{{item}}"
+        >{{item}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 视频配置 -->
+  <view class="card">
+    <view class="card-title">视频配置</view>
+
+    <!-- 生成类型 -->
+    <view class="form-item">
+      <text class="form-label">生成类型</text>
+      <view class="radio-group">
+        <view
+          class="radio-item {{generateType === 'video' ? 'active' : ''}}"
+          bindtap="onTypeSelect"
+          data-type="video"
+        >生成视频</view>
+        <view
+          class="radio-item {{generateType === 'script' ? 'active' : ''}}"
+          bindtap="onTypeSelect"
+          data-type="script"
+        >生成脚本</view>
+      </view>
+    </view>
+
+    <!-- 时长选择 -->
+    <view class="form-item">
+      <text class="form-label">视频时长（秒）</text>
+      <view class="tag-group">
+        <text
+          class="tag {{duration === item ? 'active' : ''}}"
+          wx:for="{{durations}}"
+          wx:key="*this"
+          bindtap="onDurationSelect"
+          data-duration="{{item}}"
+        >{{item}}秒</text>
+      </view>
+      <text class="form-hint" wx:if="{{duration >= 15}}">注：{{duration}}秒视频将自动分段生成并拼接</text>
+    </view>
+  </view>
+
+  <!-- 产品图片上传 -->
+  <view class="card">
+    <view class="card-title">产品图片</view>
+    <view class="form-item">
+      <text class="form-label">上传产品图片（选填）</text>
+      <view class="upload-area" bindtap="chooseImage" wx:if="{{!productImageUrl}}">
+        <text class="upload-icon">📷</text>
+        <text class="upload-text">点击上传图片</text>
+        <text class="upload-text">支持 JPG、PNG，最大 5MB</text>
+      </view>
+      <image wx:else class="preview-image" src="{{productImageUrl}}" mode="aspectFit" bindtap="chooseImage" />
+      <view class="upload-actions" wx:if="{{productImageUrl}}">
+        <button class="btn-secondary" size="mini" bindtap="removeImage">删除图片</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 场景描述 -->
+  <view class="card">
+    <view class="card-title">使用场景</view>
+    <view class="form-item">
+      <text class="form-label">场景描述（选填，最多200字）</text>
+      <textarea
+        class="form-input"
+        placeholder="描述产品的使用场景，例如：汽车制造、太阳能支架、机械设备等"
+        value="{{scenario}}"
+        bindinput="onScenarioInput"
+        maxlength="200"
+        show-confirm-bar="{{false}}"
+        auto-height
+      />
+      <text class="char-count">{{scenario.length}}/200</text>
+    </view>
+  </view>
+
+  <!-- 生成按钮 -->
+  <button
+    class="btn-primary"
+    bindtap="generateVideo"
+    disabled="{{loading}}"
+    loading="{{loading}}"
+  >{{loading ? '生成中...' : '立即生成'}}</button>
+
+  <!-- 说明 -->
+  <view class="tips">
+    <text>• 融入红色 TNHO 商标（天虹）</text>
+    <text>• 支持多种主题和时长选择</text>
+    <text>• 上传产品图片可提升生成质量</text>
+  </view>
+</view>
