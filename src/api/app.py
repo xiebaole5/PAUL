@@ -266,7 +266,7 @@ async def upload_image(file: UploadFile = File(...)):
             f.write(content)
 
         # 获取外部访问的 base URL（从环境变量或默认值）
-        base_url = os.getenv("EXTERNAL_BASE_URL", "http://47.110.72.148")
+        base_url = os.getenv("EXTERNAL_BASE_URL", "https://tnho-fasteners.com")
 
         # 返回图片 URL
         image_url = f"{base_url}/assets/uploads/{unique_filename}"
