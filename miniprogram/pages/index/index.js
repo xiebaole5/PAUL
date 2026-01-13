@@ -182,6 +182,9 @@ Page({
       requestData.product_image_url = this.data.productImageUrl
     }
 
+    // 根据生成类型设置不同的超时时间
+    const timeout = this.data.generateType === 'video' ? 5000 : 120000 // 视频异步5秒，脚本同步120秒
+
     wx.request({
       url: `${app.globalData.apiUrl}/api/generate-video`,
       method: 'POST',
@@ -189,7 +192,7 @@ Page({
       header: {
         'content-type': 'application/json'
       },
-      timeout: 10000, // 10秒超时
+      timeout: timeout,
       success(res) {
         that.setData({ loading: false })
 
@@ -224,9 +227,21 @@ Page({
       fail(err) {
         that.setData({ loading: false })
         console.error('生成失败', err)
+
+        // 更友好的错误提示
+        let errorMessage = '网络错误，生成失败'
+        if (err.errMsg && err.errMsg.includes('timeout')) {
+          errorMessage = this.data.generateType === 'script'
+            ? '生成超时，请稍后重试或减少时长'
+            : '请求超时，请检查网络连接'
+        } else if (err.errMsg && err.errMsg.includes('fail')) {
+          errorMessage = '服务器连接失败，请检查网络或稍后重试'
+        }
+
         wx.showToast({
-          title: '网络错误，生成失败',
-          icon: 'none'
+          title: errorMessage,
+          icon: 'none',
+          duration: 3000
         })
       }
     })

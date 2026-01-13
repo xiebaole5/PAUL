@@ -58,6 +58,7 @@
 
       <view class="tips">
         <text>• 视频中融入了红色 TNHO 商标</text>
+        <text>• 使用最新图生视频模型（doubao-seedance-1-5-pro-251215）</text>
         <text>• 可用于产品宣传、社交媒体推广等</text>
         <text>• 建议在 WiFi 环境下下载视频</text>
         <text wx:if="{{videoUrls.length > 1}}">• 当前视频由{{videoUrls.length}}段拼接而成</text>

@@ -77,11 +77,12 @@
   <view class="card">
     <view class="card-title">产品图片</view>
     <view class="form-item">
-      <text class="form-label">上传产品图片（选填）</text>
+      <text class="form-label">上传产品图片（选填，推荐）</text>
       <view class="upload-area" bindtap="chooseImage" wx:if="{{!productImageUrl}}">
         <text class="upload-icon">📷</text>
-        <text class="upload-text">点击上传图片</text>
-        <text class="upload-text">支持 JPG、PNG，最大 5MB</text>
+        <text class="upload-text">点击上传产品图片</text>
+        <text class="upload-text">支持图生视频，提升生成质量</text>
+        <text class="upload-text-small">支持 JPG、PNG，最大 5MB</text>
       </view>
       <image wx:else class="preview-image" src="{{productImageUrl}}" mode="aspectFit" bindtap="chooseImage" />
       <view class="upload-actions" wx:if="{{productImageUrl}}">
@@ -119,7 +120,8 @@
   <!-- 说明 -->
   <view class="tips">
     <text>• 融入红色 TNHO 商标（天虹）</text>
+    <text>• 支持图生视频：上传产品图片可提升生成质量</text>
     <text>• 支持多种主题和时长选择</text>
-    <text>• 上传产品图片可提升生成质量</text>
+    <text>• 超过12秒的视频自动分段生成并拼接</text>
   </view>
 </view>
