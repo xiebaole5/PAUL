@@ -2,6 +2,9 @@
 FastAPI 后端服务
 为微信小程序提供视频生成接口
 """
+from dotenv import load_dotenv
+load_dotenv()  # 加载 .env 文件中的环境变量
+
 import os
 import sys
 import json
