@@ -6,7 +6,10 @@ import os
 import tempfile
 from pathlib import Path
 from typing import List, Optional
-from tools.video_merge_tool import merge_videos_from_urls
+try:
+    from .video_merge_tool import merge_videos_from_urls
+except ImportError:
+    from tools.video_merge_tool import merge_videos_from_urls
 
 
 @tool
@@ -27,6 +30,10 @@ def generate_fastener_promo_video(
 
     IMPORTANT: The trademark is TNHO (天虹), NOT TOHO. Always ensure correct spelling.
 
+    NEW FEATURE: Image-to-Video support using doubao-seedance-1-5-pro-251215 model.
+    If you provide a product image URL, the model will use it as a reference to generate
+    a more accurate and realistic video that matches the product's appearance.
+
     NOTE: Due to model limitations (max 12 seconds per video), if the requested duration
     is over 12 seconds, two videos will be generated and merged automatically.
 
@@ -35,7 +42,7 @@ def generate_fastener_promo_video(
         theme: Theme of promotional video (e.g., "品质保证", "技术创新", "工业应用", "品牌形象")
         duration: Video duration in seconds (default: 20, recommended range: 5-30)
         scenario: Usage scenario description (e.g., "用于汽车制造中的高强度连接场景")
-        product_image_url: URL of product image for reference (optional)
+        product_image_url: URL of product image for reference (optional, recommended for better results)
 
     Returns:
         JSON string containing video URL and generation details
@@ -206,7 +213,7 @@ def generate_fastener_promo_video(
                     "merged_video_url": merged_video_url,
                     "status": "succeeded",
                     "message": message,
-                    "model": "doubao-seedance-1-0-pro-250528 (多段拼接)",
+                    "model": "doubao-seedance-1-5-pro-251215 (多段拼接)",
                     "duration": sum(segments),
                     "parts": video_parts
                 }, ensure_ascii=False, indent=2)
@@ -220,7 +227,7 @@ def generate_fastener_promo_video(
                     "status": "partial_success",
                     "message": f"已生成 {len(video_parts)} 段视频但拼接失败。当前返回第一段视频（{video_parts[0]['duration']}秒）。",
                     "error": merge_data.get("error"),
-                    "model": "doubao-seedance-1-0-pro-250528 (多段未拼接)",
+                    "model": "doubao-seedance-1-5-pro-251215 (多段未拼接)",
                     "duration": video_parts[0]['duration']
                 }, ensure_ascii=False, indent=2)
 
@@ -234,7 +241,7 @@ def generate_fastener_promo_video(
                 "status": "partial_success",
                 "message": f"已生成 {len(video_parts)} 段视频但拼接过程中出现错误。当前返回第一段视频（{video_parts[0]['duration']}秒）。",
                 "error": str(e),
-                "model": "doubao-seedance-1-0-pro-250528 (多段未拼接)",
+                "model": "doubao-seedance-1-5-pro-251215 (多段未拼接)",
                 "duration": video_parts[0]['duration']
             }, ensure_ascii=False, indent=2)
     else:
@@ -257,7 +264,7 @@ def generate_fastener_promo_video(
 
 def generate_promo_video_internal(prompt: str, duration: int = 20, logo_url: str = None, return_last_frame: bool = False) -> str:
     """Internal function to generate video using HTTP API"""
-    MODEL_NAME = "doubao-seedance-1-0-pro-250528"
+    MODEL_NAME = "doubao-seedance-1-5-pro-251215"
 
     # 获取 API Key（使用视频生成的专用 API Key）
     api_key = os.getenv("ARK_VIDEO_API_KEY") or "39bf20d0-55b5-4957-baa1-02f4529a3076"
@@ -267,8 +274,9 @@ def generate_promo_video_internal(prompt: str, duration: int = 20, logo_url: str
         "Authorization": "Bearer " + api_key
     }
 
-    # 构建提示词
-    full_prompt = prompt
+    # 构建提示词，将 duration 等参数集成到文本中
+    # 新API格式：--duration 5 --camerafixed false --watermark true
+    full_prompt = f"{prompt}  --duration {duration} --camerafixed false --watermark true"
 
     # 构建内容列表
     content_items = [
@@ -278,7 +286,7 @@ def generate_promo_video_internal(prompt: str, duration: int = 20, logo_url: str
         }
     ]
 
-    # 如果提供了图片 URL，添加到内容项中
+    # 如果提供了图片 URL，添加到内容项中（图生视频功能）
     if logo_url:
         content_items.append({
             "type": "image_url",
@@ -287,12 +295,12 @@ def generate_promo_video_internal(prompt: str, duration: int = 20, logo_url: str
             }
         })
 
-    # 构建请求参数（使用视频生成接口）
+    # 构建请求参数（使用新的图生视频API接口）
+    # 新API不再需要独立的 duration 和 return_last_frame 参数
+    # 这些参数已经集成到文本提示词中
     request = {
         "model": MODEL_NAME,
-        "content": content_items,
-        "duration": duration,
-        "return_last_frame": return_last_frame
+        "content": content_items
     }
 
     # 创建视频生成任务
