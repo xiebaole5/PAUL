@@ -71,6 +71,56 @@ chmod +x scripts/start_backend.sh
 - **[小程序使用说明](MINIPROGRAM_README.md)** - 小程序开发和调试
 - **[打包和下载指南](PACKAGE_GUIDE.md)** - 如何创建和分发项目包
 - **[项目总览](PROJECT_README.md)** - 项目结构和配置说明
+- **[SSL 证书快速参考](docs/SSL_QUICK_REFERENCE.md)** - Cloudflare SSL 证书配置（HTTPS）
+- **[SSL 证书详细指南](docs/CLOUDFLARE_SSL_GUIDE.md)** - 完整的 SSL 证书部署教程
+
+---
+
+## 🔒 HTTPS 配置
+
+本项目支持使用 Cloudflare Origin Certificate 配置 HTTPS。
+
+### 快速配置
+
+**方法一：服务器端自动生成（推荐）**
+```bash
+# 上传一键脚本
+scp scripts/generate_and_deploy_cert.sh root@47.110.72.148:/root/
+
+# SSH 登录服务器
+ssh root@47.110.72.148
+
+# 运行脚本
+chmod +x /root/generate_and_deploy_cert.sh
+/root/generate_and_deploy_cert.sh
+```
+
+**方法二：本地生成 + 上传**
+```bash
+# 本地生成证书
+python scripts/generate_cloudflare_cert.py \
+  --api-token "YOUR_API_TOKEN" \
+  --domain "tnho-fasteners.com"
+
+# 上传证书
+scp certs/cloudflare-origin.pem root@47.110.72.148:/etc/nginx/ssl/
+scp certs/cloudflare-origin-key.pem root@47.110.72.148:/etc/nginx/ssl/
+
+# 重载 Nginx
+ssh root@47.110.72.148 "nginx -t && systemctl reload nginx"
+```
+
+### Cloudflare 配置
+
+1. **DNS 配置**：
+   - A 记录: `tnho-fasteners.com` -> `47.110.72.148`
+   - 代理状态: **已代理**（橙色云）
+
+2. **SSL/TLS 配置**：
+   - 加密模式: **Full (strict)**
+   - Always Use HTTPS: **启用**
+
+详细说明请查看：[SSL 证书快速参考](docs/SSL_QUICK_REFERENCE.md)
 
 ---
 
