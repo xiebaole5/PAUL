@@ -67,18 +67,60 @@ chmod +x scripts/start_backend.sh
 
 ## 📚 详细文档
 
+### 部署和配置
 - **[完整部署指南](DEPLOYMENT_GUIDE.md)** - 后端和小程序部署步骤
-- **[小程序使用说明](MINIPROGRAM_README.md)** - 小程序开发和调试
-- **[打包和下载指南](PACKAGE_GUIDE.md)** - 如何创建和分发项目包
 - **[项目总览](PROJECT_README.md)** - 项目结构和配置说明
+- **[服务器快速配置](docs/服务器快速配置.md)** - 服务器环境搭建
+- **[服务器问题修复总结](docs/服务器问题修复总结.md)** - 问题诊断和修复指南
+- **[服务器问题诊断与修复指南](docs/服务器问题诊断与修复指南.md)** - 详细的修复步骤
+
+### SSL 和 HTTPS
 - **[SSL 证书快速参考](docs/SSL_QUICK_REFERENCE.md)** - Cloudflare SSL 证书配置（HTTPS）
 - **[SSL 证书详细指南](docs/CLOUDFLARE_SSL_GUIDE.md)** - 完整的 SSL 证书部署教程
+- **[Cloudflare SSL 配置指南](docs/cloudflare-ssl-配置指南.md)** - Cloudflare SSL/TLS 详细配置
+- **[Nginx SSL 配置](docs/nginx-ssl-config.md)** - Nginx SSL 证书配置
+
+### 小程序
+- **[小程序使用说明](MINIPROGRAM_README.md)** - 小程序开发和调试
+- **[小程序配置说明](miniprogram/小程序配置说明.md)** - 小程序配置详细说明
+- **[小程序快速启动指南](miniprogram/快速启动指南.md)** - 小程序快速启动
+- **[小程序正式发布指南](docs/小程序正式发布指南.md)** - 小程序发布流程
+- **[小程序问题修复指南](miniprogram/问题修复指南.md)** - 常见问题解决
+
+### 其他
+- **[打包和下载指南](PACKAGE_GUIDE.md)** - 如何创建和分发项目包
+- **[新功能说明](NEW_FEATURES_GUIDE.md)** - 图片上传和场景描述功能
 
 ---
 
 ## 🔒 HTTPS 配置
 
 本项目支持使用 Cloudflare Origin Certificate 配置 HTTPS。
+
+### 当前服务器状态
+
+**服务器**：47.110.72.148
+**域名**：tnho-fasteners.com
+**状态**：🟡 需要修复配置
+
+**已知问题**：
+- Nginx 配置冲突（多个配置文件定义相同 server_name）
+- 使用自签名 SSL 证书（需要改为 Let's Encrypt 证书）
+- 小程序无法访问 HTTPS API
+
+### 快速修复
+
+在服务器上执行自动修复脚本：
+
+```bash
+# 方法一：使用自动修复脚本（推荐）
+cd scripts
+chmod +x quick-fix-nginx.sh
+sudo bash quick-fix-nginx.sh
+
+# 方法二：手动修复
+# 详见：[服务器问题修复总结](docs/服务器问题修复总结.md)
+```
 
 ### 快速配置
 
