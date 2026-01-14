@@ -52,7 +52,12 @@ def test_wechat_url_verify():
     }
 
     print(f"请求 URL: {API_URL}")
-    print(f"请求参数: {params}")
+    print(f"请求参数:")
+    for k, v in params.items():
+        if k == "echostr":
+            print(f"  {k}: {v}")
+        else:
+            print(f"  {k}: {v}")
     print()
 
     try:
@@ -66,13 +71,20 @@ def test_wechat_url_verify():
         if response.status_code == 200 and response.text == echostr:
             print("✅ 测试通过！")
             print(f"   服务器正确返回了 echostr: {echostr}")
+            print()
+            print("现在可以在企业微信后台进行 URL 验证了！")
+            print(f"回调 URL: {API_URL}")
+            print(f"Token: {WECHAT_TOKEN}")
+            return True
         else:
             print("❌ 测试失败！")
             print(f"   期望返回: {echostr}")
             print(f"   实际返回: {response.text}")
+            return False
 
     except Exception as e:
         print(f"❌ 请求失败: {str(e)}")
+        return False
 
     print("=" * 60)
 

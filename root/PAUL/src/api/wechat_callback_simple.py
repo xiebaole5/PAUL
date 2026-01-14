@@ -16,6 +16,7 @@ router = APIRouter(prefix="/api/wechat", tags=["企业微信"])
 
 # 从环境变量读取企业微信配置
 WECHAT_TOKEN = os.getenv("WECHAT_TOKEN", "")
+WECHAT_CORP_ID = os.getenv("WECHAT_CORP_ID", "")
 
 logger.info(f"企业微信接口 - Token: {WECHAT_TOKEN[:10] if WECHAT_TOKEN else 'None'}...")
 
@@ -96,5 +97,6 @@ async def test():
     return {
         "status": "ok",
         "message": "企业微信接口正常",
-        "token_configured": bool(WECHAT_TOKEN)
+        "token_configured": bool(WECHAT_TOKEN),
+        "corp_id_configured": bool(WECHAT_CORP_ID)
     }
