@@ -31,8 +31,17 @@ class AgentState(MessagesState):
 
 
 def build_agent(ctx=None):
-    # 优先使用环境变量，否则使用当前脚本所在目录的父目录
-    workspace_path = os.getenv("COZE_WORKSPACE_PATH", os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    # 优先使用环境变量，否则使用当前脚本所在目录的父目录的父目录
+    # script path: /root/PAUL/src/agents/agent.py
+    # we want: /root/PAUL
+    if "COZE_WORKSPACE_PATH" in os.environ:
+        workspace_path = os.environ["COZE_WORKSPACE_PATH"]
+    else:
+        # 获取脚本所在目录，然后向上两级到项目根目录
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        # 从 /root/PAUL/src/agents -> /root/PAUL
+        workspace_path = os.path.dirname(os.path.dirname(script_dir))
+    
     config_path = os.path.join(workspace_path, LLM_CONFIG)
 
     with open(config_path, 'r', encoding='utf-8') as f:
