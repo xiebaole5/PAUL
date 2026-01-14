@@ -39,7 +39,7 @@ print(f'数据库URL: {database_url[:60]}...')
 try:
     engine = create_engine(database_url)
     
-    # 创建表的 SQL
+    # 创建表的 SQL - 注意字符串默认值使用单引号
     create_table_sql = '''
     CREATE TABLE IF NOT EXISTS video_generation_tasks (
         id SERIAL PRIMARY KEY,
@@ -49,7 +49,7 @@ try:
         theme VARCHAR(50) NOT NULL,
         duration INTEGER NOT NULL,
         type VARCHAR(20) NOT NULL,
-        status VARCHAR(30) NOT NULL DEFAULT \"pending\",
+        status VARCHAR(30) NOT NULL DEFAULT 'pending',
         progress INTEGER NOT NULL DEFAULT 0,
         current_step VARCHAR(255),
         total_parts INTEGER NOT NULL DEFAULT 1,
@@ -77,7 +77,7 @@ try:
         result = conn.execute(text('''
             SELECT EXISTS (
                 SELECT 1 FROM information_schema.tables 
-                WHERE table_name = \"video_generation_tasks\"
+                WHERE table_name = 'video_generation_tasks'
             );
         '''))
         exists = result.scalar()
@@ -89,12 +89,12 @@ try:
             result = conn.execute(text('''
                 SELECT column_name, data_type 
                 FROM information_schema.columns 
-                WHERE table_name = \"video_generation_tasks\" 
+                WHERE table_name = 'video_generation_tasks' 
                 ORDER BY ordinal_position;
             '''))
-            print('\\n📋 表结构:')
+            print('\n📋 表结构:')
             for row in result:
-                print(f\"  - {row[0]}: {row[1]}\")
+                print(f'  - {row[0]}: {row[1]}')
         else:
             print('❌ 表 video_generation_tasks 不存在')
             
