@@ -35,6 +35,9 @@ from storage.database.db import get_session
 from storage.database.session import get_db_session
 from storage.database.video_task_manager import VideoTaskManager, VideoTaskCreate, VideoTaskResponse
 
+# 导入企业微信模块
+from api.enterprise_wechat import router as wechat_router
+
 # 初始化 FastAPI 应用
 app = FastAPI(
     title="天虹紧固件视频生成 API",
@@ -46,6 +49,9 @@ app = FastAPI(
 assets_path = Path(workspace_path) / "assets"
 assets_path.mkdir(parents=True, exist_ok=True)
 app.mount("/assets", StaticFiles(directory=str(assets_path)), name="assets")
+
+# 注册企业微信路由
+app.include_router(wechat_router)
 
 # 请求模型
 class VideoGenerateRequest(BaseModel):
