@@ -107,9 +107,12 @@ async def wechat_url_verify(
     - msg_signature: 签名
     - timestamp: 时间戳
     - nonce: 随机数
-    - echostr: 加密的随机字符串（需要解密后返回）
+    - echostr: 随机字符串（明文，直接返回即可）
 
-    返回：解密后的 echostr 字符串（纯文本，不是 JSON）
+    重要：在 URL 验证阶段，echostr 是明文，不需要解密！
+    只需要验证签名后直接返回 echostr 即可。
+
+    返回：echostr 字符串（纯文本，不是 JSON）
     """
     try:
         logger.info("=" * 60)
@@ -120,7 +123,7 @@ async def wechat_url_verify(
         logger.info(f"  echostr: {echostr[:50]}...（长度: {len(echostr)}）")
         logger.info("=" * 60)
 
-        # 第一步：验证签名
+        # 验证签名
         # 排序并拼接参数
         arr = [WECHAT_TOKEN, timestamp, nonce, echostr]
         arr.sort()
@@ -139,16 +142,11 @@ async def wechat_url_verify(
             raise HTTPException(status_code=400, detail="签名验证失败")
 
         logger.info("✅ 签名验证通过")
-
-        # 第二步：解密 echostr
-        logger.info("开始解密 echostr...")
-        decrypted_echostr = crypto.decrypt_echostr(echostr)
-
-        logger.info(f"✅ 解密成功: {decrypted_echostr}")
+        logger.info(f"✅ 直接返回 echostr: {echostr}")
         logger.info("=" * 60)
 
-        # 第三步：返回解密后的 echostr（纯文本）
-        return decrypted_echostr
+        # 直接返回 echostr（纯文本，不需要解密）
+        return echostr
 
     except HTTPException:
         raise
