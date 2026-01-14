@@ -1,244 +1,191 @@
 #!/usr/bin/env python3
 """
 Cloudflare Origin Certificate 生成脚本
-使用 Cloudflare API 自动创建 Origin Certificate
 
-使用说明：
-1. 需要提供 Cloudflare API Token（权限：Zone - SSL and Certificates - Edit）
-2. 脚本会自动创建证书并保存到文件
-3. 生成的证书有效期为 15 年
+使用方法：
+    python generate_cloudflare_cert.py --api-token YOUR_API_TOKEN --domain tnho-fasteners.com
 
-生成文件：
-- cloudflare-origin.pem (证书文件)
-- cloudflare-origin-key.pem (私钥文件)
+前置要求：
+    1. 安装依赖：pip install pyyaml requests
+    2. 在 Cloudflare 控制台获取 API Token
 """
 
+import argparse
+import base64
 import os
 import sys
-import requests
-import argparse
-from pathlib import Path
 from datetime import datetime
 
+try:
+    import requests
+except ImportError:
+    print("错误：缺少 requests 库")
+    print("请运行：pip install requests")
+    sys.exit(1)
 
-def generate_origin_certificate(api_token, zone_id, hostnames, validity_days=5475):
+# Cloudflare API 配置
+CLOUDFLARE_API_URL = "https://api.cloudflare.com/client/v4"
+
+
+def generate_certificate(api_token, domain, validity_days=5475):
     """
     生成 Cloudflare Origin Certificate
 
-    Args:
+    参数:
         api_token: Cloudflare API Token
-        zone_id: Cloudflare Zone ID
-        hostnames: 域名列表，如 ["tnho-fasteners.com", "*.tnho-fasteners.com"]
-        validity_days: 证书有效期（默认 15 年 = 5475 天）
+        domain: 域名
+        validity_days: 证书有效期（天），默认 5475 天（15 年）
 
-    Returns:
-        dict: 包含证书和私钥的字典
+    返回:
+        证书和私钥
     """
     headers = {
         "Authorization": f"Bearer {api_token}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
 
+    # 准备证书请求
     payload = {
-        "hostnames": hostnames,
-        "requested_validity": validity_days,
-        "request_type": "origin-ecc",  # 使用 ECC 证书，性能更好
-        "certificate_authority": "cloudflare"  # 使用 Cloudflare 签发
+        "type": "origin-ecc",  # 使用 ECC 证书（更安全、性能更好）
+        "hostnames": [
+            f"*.{domain}",
+            domain,
+        ],
+        "request_type": "origin-rsa",  # RSA 兼容性更好
+        "validity": validity_days,
     }
 
-    api_url = f"https://api.cloudflare.com/client/v4/zones/{zone_id}/origin/ca/certificate"
+    print(f"正在为域名 {domain} 生成 Origin Certificate...")
+    print(f"有效期：{validity_days} 天")
 
-    try:
-        print(f"正在生成 Origin Certificate...")
-        print(f"域名: {', '.join(hostnames)}")
-        print(f"有效期: {validity_days} 天 ({validity_days // 365} 年)")
+    # 发送请求
+    response = requests.post(
+        f"{CLOUDFLARE_API_URL}/certificates",
+        headers=headers,
+        json=payload,
+    )
 
-        response = requests.post(api_url, headers=headers, json=payload, timeout=30)
+    if response.status_code != 200:
+        print(f"错误：生成证书失败")
+        print(f"状态码：{response.status_code}")
+        print(f"响应：{response.text}")
+        sys.exit(1)
 
-        if response.status_code == 200:
-            data = response.json()
-            if data.get("success"):
-                result = data.get("result", {})
-                print("\n✅ 证书生成成功！")
-                return {
-                    "certificate": result.get("certificate"),
-                    "private_key": result.get("private_key"),
-                    "csr": result.get("csr")
-                }
-            else:
-                errors = data.get("errors", [])
-                print(f"\n❌ 证书生成失败: {errors}")
-                return None
-        else:
-            print(f"\n❌ API 请求失败 (HTTP {response.status_code}): {response.text}")
-            return None
+    data = response.json()
 
-    except Exception as e:
-        print(f"\n❌ 发生错误: {str(e)}")
-        return None
+    if not data.get("success"):
+        print(f"错误：API 返回失败")
+        print(f"错误信息：{data.get('errors')}")
+        sys.exit(1)
+
+    result = data["result"]
+
+    print("✅ 证书生成成功！")
+
+    return result["certificate"], result["private_key"]
 
 
-def save_certificates(cert_data, output_dir="certs"):
+def save_certificate(certificate, private_key, output_dir="certs"):
     """
     保存证书和私钥到文件
 
-    Args:
-        cert_data: 包含证书和私钥的字典
+    参数:
+        certificate: 证书内容
+        private_key: 私钥内容
         output_dir: 输出目录
     """
-    output_path = Path(output_dir)
-    output_path.mkdir(exist_ok=True)
+    # 创建输出目录
+    os.makedirs(output_dir, exist_ok=True)
+
+    # 证书文件路径
+    cert_path = os.path.join(output_dir, "cloudflare-origin.crt")
+    key_path = os.path.join(output_dir, "cloudflare-origin.key")
 
     # 保存证书
-    cert_file = output_path / "cloudflare-origin.pem"
-    with open(cert_file, "w", encoding="utf-8") as f:
-        f.write(cert_data["certificate"])
-    print(f"✅ 证书已保存: {cert_file.absolute()}")
+    with open(cert_path, "w") as f:
+        f.write(certificate)
+    print(f"✅ 证书已保存：{cert_path}")
 
     # 保存私钥
-    key_file = output_path / "cloudflare-origin-key.pem"
-    with open(key_file, "w", encoding="utf-8") as f:
-        f.write(cert_data["private_key"])
-    print(f"✅ 私钥已保存: {key_file.absolute()}")
+    with open(key_path, "w") as f:
+        f.write(private_key)
+    print(f"✅ 私钥已保存：{key_path}")
 
-    # 设置私钥权限
-    os.chmod(key_file, 0o600)
-    print(f"✅ 私钥权限已设置为 600 (仅所有者可读写)")
-
-    # 保存 CSR（可选）
-    csr_file = output_path / "cloudflare-origin.csr"
-    if cert_data.get("csr"):
-        with open(csr_file, "w", encoding="utf-8") as f:
-            f.write(cert_data["csr"])
-        print(f"✅ CSR 已保存: {csr_file.absolute()}")
-
-    return {
-        "cert": str(cert_file.absolute()),
-        "key": str(key_file.absolute())
-    }
+    return cert_path, key_path
 
 
-def get_zone_list(api_token):
+def display_instructions(cert_path, key_path):
     """
-    获取用户的 Zone 列表
-
-    Args:
-        api_token: Cloudflare API Token
-
-    Returns:
-        list: Zone 列表
+    显示下一步操作说明
     """
-    headers = {
-        "Authorization": f"Bearer {api_token}",
-        "Content-Type": "application/json"
-    }
-
-    api_url = "https://api.cloudflare.com/client/v4/zones"
-
-    try:
-        response = requests.get(api_url, headers=headers, timeout=30)
-
-        if response.status_code == 200:
-            data = response.json()
-            if data.get("success"):
-                return data.get("result", [])
-        return []
-
-    except Exception as e:
-        print(f"❌ 获取 Zone 列表失败: {str(e)}")
-        return []
+    print("\n" + "=" * 60)
+    print("📋 下一步操作说明")
+    print("=" * 60)
+    print("\n1. 上传证书到服务器：")
+    print(f"   scp {cert_path} root@47.110.72.148:/etc/nginx/ssl/tnho-origin.crt")
+    print(f"   scp {key_path} root@47.110.72.148:/etc/nginx/ssl/tnho-origin.key")
+    print("\n2. SSH 登录服务器：")
+    print("   ssh root@47.110.72.148")
+    print("\n3. 重启 Nginx：")
+    print("   nginx -t && nginx -s reload")
+    print("\n4. 测试证书：")
+    print("   curl -I https://tnho-fasteners.com")
+    print("\n5. 检查 Cloudflare SSL 设置：")
+    print("   - 登录 https://dash.cloudflare.com/")
+    print("   - 选择 tnho-fasteners.com 域名")
+    print("   - 进入 SSL/TLS -> Overview")
+    print("   - 确保模式为 'Full' 或 'Full (strict)'")
+    print("\n6. 测试小程序：")
+    print("   - 打开微信开发者工具")
+    print("   - 刷新小程序")
+    print("   - 应该可以正常访问 API 了")
+    print("=" * 60)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="生成 Cloudflare Origin Certificate")
-    parser.add_argument("--api-token", "-t", required=True, help="Cloudflare API Token")
-    parser.add_argument("--zone-id", "-z", help="Cloudflare Zone ID")
-    parser.add_argument("--domain", "-d", default="tnho-fasteners.com", help="域名 (默认: tnho-fasteners.com)")
-    parser.add_argument("--output-dir", "-o", default="certs", help="输出目录 (默认: certs)")
-    parser.add_argument("--validity-days", "-v", type=int, default=5475, help="有效期天数 (默认: 5475 = 15年)")
+    parser = argparse.ArgumentParser(
+        description="生成 Cloudflare Origin Certificate"
+    )
+    parser.add_argument(
+        "--api-token",
+        required=True,
+        help="Cloudflare API Token",
+    )
+    parser.add_argument(
+        "--domain",
+        default="tnho-fasteners.com",
+        help="域名（默认：tnho-fasteners.com）",
+    )
+    parser.add_argument(
+        "--validity-days",
+        type=int,
+        default=5475,
+        help="证书有效期（天，默认：5475 天）",
+    )
+    parser.add_argument(
+        "--output-dir",
+        default="certs",
+        help="输出目录（默认：certs）",
+    )
 
     args = parser.parse_args()
 
-    # 检查 API Token
-    print("=" * 60)
-    print("Cloudflare Origin Certificate 生成工具")
-    print("=" * 60)
-
-    # 如果没有提供 Zone ID，自动查找
-    zone_id = args.zone_id
-    if not zone_id:
-        print("\n正在获取 Zone 列表...")
-        zones = get_zone_list(args.api_token)
-
-        if not zones:
-            print("❌ 未找到任何 Zone，请检查 API Token 权限")
-            sys.exit(1)
-
-        # 查找匹配的 Zone
-        matching_zones = [z for z in zones if args.domain in z.get("name", "")]
-
-        if not matching_zones:
-            print(f"\n❌ 未找到域名 '{args.domain}' 对应的 Zone")
-            print("\n可用的 Zone 列表:")
-            for zone in zones:
-                print(f"  - {zone['name']} (ID: {zone['id']})")
-            sys.exit(1)
-
-        if len(matching_zones) == 1:
-            zone_id = matching_zones[0]["id"]
-            print(f"✅ 自动找到 Zone: {matching_zones[0]['name']} (ID: {zone_id})")
-        else:
-            print(f"\n找到多个匹配的 Zone:")
-            for i, zone in enumerate(matching_zones, 1):
-                print(f"  {i}. {zone['name']} (ID: {zone['id']})")
-
-            choice = input("\n请选择 Zone 编号 (1-{}): ".format(len(matching_zones)))
-            try:
-                zone_id = matching_zones[int(choice) - 1]["id"]
-            except (ValueError, IndexError):
-                print("❌ 无效的选择")
-                sys.exit(1)
-
-    # 准备域名列表（包含通配符）
-    hostnames = [
-        args.domain,
-        f"*.{args.domain}",
-        f"www.{args.domain}"
-    ]
-
     # 生成证书
-    cert_data = generate_origin_certificate(
-        api_token=args.api_token,
-        zone_id=zone_id,
-        hostnames=hostnames,
-        validity_days=args.validity_days
+    certificate, private_key = generate_certificate(
+        args.api_token,
+        args.domain,
+        args.validity_days,
     )
 
-    if cert_data:
-        # 保存证书
-        print("\n正在保存证书...")
-        saved_files = save_certificates(cert_data, args.output_dir)
+    # 保存证书
+    cert_path, key_path = save_certificate(
+        certificate,
+        private_key,
+        args.output_dir,
+    )
 
-        print("\n" + "=" * 60)
-        print("📋 下一步操作:")
-        print("=" * 60)
-        print("\n1. 将证书文件上传到服务器:")
-        print(f"   scp {saved_files['cert']} root@47.110.72.148:/etc/nginx/ssl/")
-        print(f"   scp {saved_files['key']} root@47.110.72.148:/etc/nginx/ssl/")
-        print("\n2. 在服务器上更新 Nginx 配置:")
-        print("   ssl_certificate /etc/nginx/ssl/cloudflare-origin.pem;")
-        print("   ssl_certificate_key /etc/nginx/ssl/cloudflare-origin-key.pem;")
-        print("\n3. 重启 Nginx:")
-        print("   nginx -t && systemctl reload nginx")
-        print("\n4. 配置 Cloudflare DNS:")
-        print(f"   - A 记录: tnho-fasteners.com -> 47.110.72.148")
-        print(f"   - CNAME 记录: www.tnho-fasteners.com -> tnho-fasteners.com")
-        print("\n5. 在 Cloudflare SSL/TLS 设置中:")
-        print("   - 加密模式: Full (strict)")
-        print("=" * 60)
-    else:
-        print("\n❌ 证书生成失败，请检查错误信息")
-        sys.exit(1)
+    # 显示说明
+    display_instructions(cert_path, key_path)
 
 
 if __name__ == "__main__":

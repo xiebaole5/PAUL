@@ -129,39 +129,52 @@ curl -k https://localhost/health
 
 当前使用自签名证书，建议升级为 Cloudflare Origin Certificate 以消除浏览器警告。
 
-详细步骤：[HTTPS 配置完成说明](docs/HTTPS_SETUP.md)
+### 🚀 快速配置（Cloudflare Origin Certificate）
 
-### 快速修复
+**5 分钟快速配置：**
 
-### 快速配置
+1. **获取 Cloudflare API Token**
+   - 访问：https://dash.cloudflare.com/
+   - 点击右上角头像 -> `My Profile` -> `API Tokens`
+   - 点击 `Create Token`，选择 `Edit zone DNS` 模板
+   - 配置权限：`Zone` -> `SSL and Certificates` -> `Edit`
+   - 选择域名：`tnho-fasteners.com`
+   - 点击 `Create Token`，**复制保存 Token**
 
-**方法一：服务器端自动生成（推荐）**
-```bash
-# 上传一键脚本
-scp scripts/generate_and_deploy_cert.sh root@47.110.72.148:/root/
+2. **生成证书**
+   ```bash
+   pip install requests
 
-# SSH 登录服务器
-ssh root@47.110.72.148
+   python scripts/generate_cloudflare_cert.py \
+     --api-token YOUR_API_TOKEN \
+     --domain tnho-fasteners.com
+   ```
 
-# 运行脚本
-chmod +x /root/generate_and_deploy_cert.sh
-/root/generate_and_deploy_cert.sh
-```
+3. **部署证书**
+   ```bash
+   chmod +x scripts/deploy_cloudflare_cert.sh
 
-**方法二：本地生成 + 上传**
-```bash
-# 本地生成证书
-python scripts/generate_cloudflare_cert.py \
-  --api-token "YOUR_API_TOKEN" \
-  --domain "tnho-fasteners.com"
+   ./scripts/deploy_cloudflare_cert.sh \
+     --cert certs/cloudflare-origin.crt \
+     --key certs/cloudflare-origin.key
+   ```
 
-# 上传证书
-scp certs/cloudflare-origin.pem root@47.110.72.148:/etc/nginx/ssl/
-scp certs/cloudflare-origin-key.pem root@47.110.72.148:/etc/nginx/ssl/
+4. **配置 Cloudflare SSL**
+   - 登录 https://dash.cloudflare.com/
+   - 选择 `tnho-fasteners.com` 域名
+   - 导航到 `SSL/TLS` -> `Overview`
+   - 选择模式：`Full` 或 `Full (strict)`
 
-# 重载 Nginx
-ssh root@47.110.72.148 "nginx -t && systemctl reload nginx"
-```
+5. **验证**
+   ```bash
+   curl -I https://tnho-fasteners.com
+   curl https://tnho-fasteners.com/health
+   ```
+
+**详细文档：**
+- [Cloudflare Origin Certificate 快速开始](QUICK_START_CLOUDFLARE_CERT.md)
+- [Cloudflare Certificate 部署指南](docs/CLOUDFLARE_CERT_DEPLOYMENT.md)
+- [HTTPS 配置完成说明](docs/HTTPS_SETUP.md)
 
 ### Cloudflare 配置
 
