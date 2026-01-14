@@ -11,14 +11,20 @@ from typing import List, Optional, Callable
 from datetime import datetime
 import uuid
 
-try:
-    import moviepy
-    VideoFileClip = moviepy.VideoFileClip
-    concatenate_videoclips = moviepy.concatenate_videoclips
-except ImportError as e:
-    print(f"警告: moviepy 未正确安装，视频拼接功能将不可用: {e}")
-    VideoFileClip = None
-    concatenate_videoclips = None
+# 延迟导入 moviepy，避免 LSP 检查失败
+VideoFileClip = None
+concatenate_videoclips = None
+
+def _init_moviepy():
+    """延迟初始化 moviepy"""
+    global VideoFileClip, concatenate_videoclips
+    if VideoFileClip is None:
+        try:
+            import moviepy  # type: ignore
+            VideoFileClip = moviepy.VideoFileClip  # type: ignore
+            concatenate_videoclips = moviepy.concatenate_videoclips  # type: ignore
+        except ImportError as e:
+            print(f"警告: moviepy 未正确安装，视频拼接功能将不可用: {e}")
 
 # 导入对象存储上传工具
 try:
@@ -72,6 +78,12 @@ def merge_videos(video_urls: List[str], output_dir: Optional[str] = None) -> str
     Returns:
         拼接后的视频URL
     """
+    # 初始化 moviepy
+    _init_moviepy()
+
+    if VideoFileClip is None or concatenate_videoclips is None:
+        raise Exception("moviepy 未正确安装，无法拼接视频")
+
     try:
         # 创建临时下载目录
         if output_dir is None:
