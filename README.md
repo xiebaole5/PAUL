@@ -95,32 +95,43 @@ chmod +x scripts/start_backend.sh
 
 ## 🔒 HTTPS 配置
 
-本项目支持使用 Cloudflare Origin Certificate 配置 HTTPS。
+本项目已配置 HTTPS 访问，支持使用 Cloudflare Origin Certificate。
 
 ### 当前服务器状态
 
 **服务器**：47.110.72.148
 **域名**：tnho-fasteners.com
-**状态**：🟡 需要修复配置
+**状态**：✅ HTTPS 已启用
 
-**已知问题**：
-- Nginx 配置冲突（多个配置文件定义相同 server_name）
-- 使用自签名 SSL 证书（需要改为 Let's Encrypt 证书）
-- 小程序无法访问 HTTPS API
+**服务状态**：
+- HTTP (80 端口)：自动跳转到 HTTPS ✅
+- HTTPS (443 端口)：正常提供服务 ✅
+- 反向代理：正常转发到 FastAPI (8080) ✅
+- 当前证书：自签名证书（临时，浏览器会警告）⚠️
 
-### 快速修复
-
-在服务器上执行自动修复脚本：
+### 管理命令
 
 ```bash
-# 方法一：使用自动修复脚本（推荐）
-cd scripts
-chmod +x quick-fix-nginx.sh
-sudo bash quick-fix-nginx.sh
+# 查看 Nginx 状态
+./scripts/nginx.sh status
 
-# 方法二：手动修复
-# 详见：[服务器问题修复总结](docs/服务器问题修复总结.md)
+# 测试 HTTPS 访问
+curl -k https://localhost/health
+
+# 重启 Nginx
+./scripts/nginx.sh restart
+
+# 查看完整配置
+./scripts/nginx.sh config
 ```
+
+### 升级证书（推荐）
+
+当前使用自签名证书，建议升级为 Cloudflare Origin Certificate 以消除浏览器警告。
+
+详细步骤：[HTTPS 配置完成说明](docs/HTTPS_SETUP.md)
+
+### 快速修复
 
 ### 快速配置
 
