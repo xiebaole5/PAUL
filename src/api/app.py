@@ -35,8 +35,8 @@ from storage.database.db import get_session
 from storage.database.session import get_db_session
 from storage.database.video_task_manager import VideoTaskManager, VideoTaskCreate, VideoTaskResponse
 
-# 导入企业微信模块
-from src.api.enterprise_wechat import router as wechat_router
+# 导入企业微信模块（使用简化版本）
+from src.api.wechat_callback_simple import router as wechat_router
 
 # 初始化 FastAPI 应用
 app = FastAPI(

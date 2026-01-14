@@ -1,6 +1,5 @@
-INFO:     Started server process [2300]
+INFO:src.api.wechat_callback_simple:企业微信配置 - Token: gkIzrwgJI0..., CorpID: ww4564cfcc6de70e6c
+INFO:     Started server process [2390]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
-ERROR:    [Errno 98] error while attempting to bind on address ('0.0.0.0', 8080): address already in use
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
+INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
