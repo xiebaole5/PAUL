@@ -31,7 +31,8 @@ class AgentState(MessagesState):
 
 
 def build_agent(ctx=None):
-    workspace_path = os.getenv("COZE_WORKSPACE_PATH", "/workspace/projects")
+    # 优先使用环境变量，否则使用当前脚本所在目录的父目录
+    workspace_path = os.getenv("COZE_WORKSPACE_PATH", os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     config_path = os.path.join(workspace_path, LLM_CONFIG)
 
     with open(config_path, 'r', encoding='utf-8') as f:
