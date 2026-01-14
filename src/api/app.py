@@ -32,6 +32,7 @@ import uuid
 from agents.agent import build_agent
 from langgraph.types import RunnableConfig
 from storage.database.db import get_session
+from storage.database.session import get_db_session
 from storage.database.video_task_manager import VideoTaskManager, VideoTaskCreate, VideoTaskResponse
 
 # 初始化 FastAPI 应用
@@ -114,14 +115,12 @@ async def process_video_generation_task(
     # 创建进度回调函数
     def progress_callback(progress: int, message: str):
         """进度回调函数"""
-        db = get_session()
-        try:
-            mgr = VideoTaskManager()
-            mgr.update_progress(db, task_id, progress, message)
-        except Exception as e:
-            print(f"更新进度失败: {e}")
-        finally:
-            db.close()
+        with get_db_session() as db:
+            try:
+                mgr = VideoTaskManager()
+                mgr.update_progress(db, task_id, progress, message)
+            except Exception as e:
+                print(f"更新进度失败: {e}")
 
     # 获取 Agent
     agent = get_agent()
@@ -181,32 +180,28 @@ async def process_video_generation_task(
                     pass
 
         # 更新任务状态
-        db = get_session()
-        try:
-            mgr = VideoTaskManager()
-            if video_url:
-                result_data = {
-                    "video_urls": video_urls or [video_url],
-                    "merged_video_url": merged_video_url
-                }
-                mgr.mark_as_completed(db, task_id, result_data)
-            else:
-                mgr.mark_as_failed(db, task_id, f"无法从响应中提取视频 URL。响应内容：{content_text}")
-        except Exception as e:
-            print(f"更新任务状态失败: {e}")
-        finally:
-            db.close()
+        with get_db_session() as db:
+            try:
+                mgr = VideoTaskManager()
+                if video_url:
+                    result_data = {
+                        "video_urls": video_urls or [video_url],
+                        "merged_video_url": merged_video_url
+                    }
+                    mgr.mark_as_completed(db, task_id, result_data)
+                else:
+                    mgr.mark_as_failed(db, task_id, f"无法从响应中提取视频 URL。响应内容：{content_text}")
+            except Exception as e:
+                print(f"更新任务状态失败: {e}")
 
     except Exception as e:
         # 标记任务失败
-        db = get_session()
-        try:
-            mgr = VideoTaskManager()
-            mgr.mark_as_failed(db, task_id, str(e))
-        except Exception as e2:
-            print(f"标记任务失败时出错: {e2}")
-        finally:
-            db.close()
+        with get_db_session() as db:
+            try:
+                mgr = VideoTaskManager()
+                mgr.mark_as_failed(db, task_id, str(e))
+            except Exception as e2:
+                print(f"标记任务失败时出错: {e2}")
 
 @app.get("/")
 async def root():
@@ -381,22 +376,20 @@ async def generate_video(request: VideoGenerateRequest, background_tasks: Backgr
         total_parts = calculate_total_parts(request.duration)
 
         # 创建任务记录
-        db = get_session()
-        try:
-            mgr = VideoTaskManager()
-            task_create = VideoTaskCreate(
-                task_id=task_id,
-                session_id=request.session_id,
-                product_name=request.product_name,
-                theme=request.theme,
-                duration=request.duration,
-                type=request.type
-            )
-            mgr.create_task(db, task_create, total_parts=total_parts)
-        except Exception as e:
-            print(f"创建任务记录失败: {e}")
-        finally:
-            db.close()
+        with get_db_session() as db:
+            try:
+                mgr = VideoTaskManager()
+                task_create = VideoTaskCreate(
+                    task_id=task_id,
+                    session_id=request.session_id,
+                    product_name=request.product_name,
+                    theme=request.theme,
+                    duration=request.duration,
+                    type=request.type
+                )
+                mgr.create_task(db, task_create, total_parts=total_parts)
+            except Exception as e:
+                print(f"创建任务记录失败: {e}")
 
         # 添加后台任务
         background_tasks.add_task(
@@ -444,46 +437,44 @@ async def get_progress(task_id: str):
         error_message: 错误信息（如果失败）
         message: 消息
     """
-    db = get_session()
-    try:
-        mgr = VideoTaskManager()
-        task = mgr.get_task_by_id(db, task_id)
+    with get_db_session() as db:
+        try:
+            mgr = VideoTaskManager()
+            task = mgr.get_task_by_id(db, task_id)
 
-        if not task:
+            if not task:
+                return ProgressResponse(
+                    success=False,
+                    task_id=task_id,
+                    message=f"任务不存在：{task_id}"
+                )
+
+            # 将任务转换为响应模型
+            response_data = {
+                "success": True,
+                "task_id": task.task_id,
+                "status": task.status,
+                "progress": task.progress,
+                "current_step": task.current_step,
+                "total_parts": task.total_parts,
+                "completed_parts": task.completed_parts,
+                "video_urls": task.video_urls,
+                "merged_video_url": task.merged_video_url,
+                "script_content": task.script_content,
+                "error_message": task.error_message,
+                "message": _get_status_message(task.status, task.progress)
+            }
+
+            return ProgressResponse(**response_data)
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
             return ProgressResponse(
                 success=False,
                 task_id=task_id,
-                message=f"任务不存在：{task_id}"
+                message=f"查询进度失败: {str(e)}"
             )
-
-        # 将任务转换为响应模型
-        response_data = {
-            "success": True,
-            "task_id": task.task_id,
-            "status": task.status,
-            "progress": task.progress,
-            "current_step": task.current_step,
-            "total_parts": task.total_parts,
-            "completed_parts": task.completed_parts,
-            "video_urls": task.video_urls,
-            "merged_video_url": task.merged_video_url,
-            "script_content": task.script_content,
-            "error_message": task.error_message,
-            "message": _get_status_message(task.status, task.progress)
-        }
-
-        return ProgressResponse(**response_data)
-
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        return ProgressResponse(
-            success=False,
-            task_id=task_id,
-            message=f"查询进度失败: {str(e)}"
-        )
-    finally:
-        db.close()
 
 def _get_status_message(status: str, progress: int) -> str:
     """根据状态生成友好的消息"""

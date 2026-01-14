@@ -48,12 +48,13 @@ def _create_engine_with_retry():
         raise ValueError("PGDATABASE_URL is not set")
 
     # 优化连接池配置，适配4GB内存服务器
-    # 最大连接数 = pool_size + max_overflow = 20 + 30 = 50
-    # 内存占用约 250MB（每个连接约5MB）
-    size = 20           # 连接池大小
-    overflow = 30      # 最大溢出连接数
-    recycle = 3600     # 连接回收时间（1小时）
-    timeout = 60       # 连接超时（60秒）
+    # 最大连接数 = pool_size + max_overflow = 10 + 10 = 20
+    # 内存占用约 100MB（每个连接约5MB）
+    # 降低连接数以减少数据库压力，提高稳定性
+    size = 10           # 连接池大小（从20降低）
+    overflow = 10      # 最大溢出连接数（从30降低）
+    recycle = 1800     # 连接回收时间（30分钟，从1小时缩短）
+    timeout = 30       # 连接超时（30秒，从60秒缩短）
 
     engine = create_engine(
         url,
@@ -63,8 +64,8 @@ def _create_engine_with_retry():
         pool_recycle=recycle,
         pool_timeout=timeout,
         connect_args={
-            "connect_timeout": 10,  # 数据库连接超时（10秒）
-            "options": "-c statement_timeout=60000"  # SQL执行超时（60秒）
+            "connect_timeout": 5,  # 数据库连接超时（5秒，从10秒缩短）
+            "options": "-c statement_timeout=30000"  # SQL执行超时（30秒，从60秒缩短）
         },
     )
     # 验证连接，带重试
