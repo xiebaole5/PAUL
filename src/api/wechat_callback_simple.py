@@ -6,7 +6,7 @@ import os
 import hashlib
 from typing import Annotated
 from fastapi import APIRouter, Query, HTTPException
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import Response
 import logging
 
 # 配置日志
@@ -19,9 +19,10 @@ router = APIRouter(prefix="/api/wechat", tags=["企业微信"])
 WECHAT_TOKEN = os.getenv("WECHAT_TOKEN", "")
 
 logger.info(f"企业微信接口 - Token: {WECHAT_TOKEN[:10] if WECHAT_TOKEN else 'None'}...")
+logger.info(f"完整Token: {WECHAT_TOKEN}")
 
 
-@router.get("/callback", response_class=PlainTextResponse)
+@router.get("/callback")
 async def wechat_url_verify(
     msg_signature: Annotated[str, Query(...)],
     timestamp: Annotated[str, Query(...)],
@@ -48,14 +49,15 @@ async def wechat_url_verify(
         logger.info("=" * 60)
 
         # 验证签名
-        # 1. 将 token, timestamp, nonce, echostr 按字典序排序
-        # 注意：FastAPI 已自动对 echostr 进行 URL 解码，无需再次解码
-        arr = [WECHAT_TOKEN, timestamp, nonce, echostr]
+        # 根据企业微信官方文档：只使用 token, timestamp, nonce 进行签名验证
+        # echostr 不参与签名计算！
+        arr = [WECHAT_TOKEN, timestamp, nonce]
         arr.sort()
         s = ''.join(arr)
 
         logger.info(f"排序后的参数: {arr}")
         logger.info(f"拼接后的字符串: {s}")
+        logger.info(f"用于签名的Token: {WECHAT_TOKEN}")
 
         # 2. SHA1 加密
         sha1 = hashlib.sha1()
@@ -77,7 +79,8 @@ async def wechat_url_verify(
         logger.info("=" * 60)
 
         # 4. 直接返回 echostr（明文，不需要解密）
-        return echostr
+        # 使用Response确保返回纯文本
+        return Response(content=echostr, media_type="text/plain")
 
     except HTTPException:
         raise

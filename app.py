@@ -2,6 +2,10 @@
 # 从 src/api 导入 FastAPI 应用
 import os
 import sys
+from dotenv import load_dotenv
+
+# 加载 .env 文件
+load_dotenv()
 
 # 添加 src 目录到 Python 路径
 current_dir = os.path.dirname(os.path.abspath(__file__))
