@@ -5,11 +5,16 @@
 import os
 import tempfile
 from langchain.tools import tool, ToolRuntime
-from coze_coding_dev_sdk.s3 import upload_to_s3
 import requests
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# 导入对象存储上传工具
+try:
+    from tools.storage_upload_tool import upload_and_get_url
+except ImportError:
+    upload_and_get_url = None
 
 # 获取环境变量
 ARK_API_KEY = os.getenv("ARK_API_KEY", "")
@@ -134,7 +139,16 @@ def generate_image(
             temp_file.close()
 
             # 上传到对象存储
-            oss_url = upload_to_s3(temp_file.name, "wechat/images/")
+            if upload_and_get_url:
+                import datetime
+                import uuid
+                timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                unique_id = str(uuid.uuid4())[:8]
+                file_name = f"wechat_image_{timestamp}_{unique_id}.png"
+                oss_url = upload_and_get_url(temp_file.name, file_name)
+            else:
+                oss_url = image_url  # 如果上传工具不可用，使用原始URL
+
             os.unlink(temp_file.name)
 
             return f"""
