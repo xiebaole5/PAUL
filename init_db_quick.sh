@@ -7,19 +7,34 @@ cd /root/PAUL
 # 激活虚拟环境
 source venv/bin/activate
 
+# 安装 python-dotenv 如果不存在
+pip install python-dotenv -q 2>/dev/null
+
 # 运行数据库初始化
 python -c "
 import os
 import sys
+from pathlib import Path
 from sqlalchemy import create_engine, text
+
+# 读取 .env 文件
+env_file = Path('.env')
+if env_file.exists():
+    from dotenv import load_dotenv
+    load_dotenv(env_file)
+    print('✅ 已加载 .env 文件')
+else:
+    print('❌ 错误: .env 文件不存在')
+    sys.exit(1)
 
 # 从环境变量读取数据库配置
 database_url = os.getenv('PGDATABASE_URL')
 if not database_url:
     print('❌ 错误: 未找到 PGDATABASE_URL 环境变量')
+    print('请检查 .env 文件中是否配置了 PGDATABASE_URL')
     sys.exit(1)
 
-print(f'数据库URL: {database_url[:50]}...')
+print(f'数据库URL: {database_url[:60]}...')
 
 try:
     engine = create_engine(database_url)
