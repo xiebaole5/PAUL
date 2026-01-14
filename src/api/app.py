@@ -38,12 +38,18 @@ from storage.database.video_task_manager import VideoTaskManager, VideoTaskCreat
 # 导入企业微信模块（使用简化版本）
 from src.api.wechat_callback_simple import router as wechat_router
 
+# 导入请求日志中间件
+from src.api.middleware import RequestLoggingMiddleware
+
 # 初始化 FastAPI 应用
 app = FastAPI(
     title="天虹紧固件视频生成 API",
     description="为微信小程序提供AI视频生成服务",
     version="1.1.0"
 )
+
+# 添加请求日志中间件
+app.add_middleware(RequestLoggingMiddleware)
 
 # 挂载静态文件服务
 assets_path = Path(workspace_path) / "assets"
