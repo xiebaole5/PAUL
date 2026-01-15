@@ -1,0 +1,48 @@
+/* index.wxss */
+.header {
+  text-align: center;
+  padding: 60rpx 20rpx 40rpx;
+}
+
+.header-title {
+  display: block;
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #D32F2F;
+  margin-bottom: 16rpx;
+}
+
+.header-subtitle {
+  display: block;
+  font-size: 28rpx;
+  color: #666;
+}
+
+.upload-actions {
+  margin-top: 20rpx;
+  text-align: center;
+}
+
+.char-count {
+  font-size: 24rpx;
+  color: #999;
+  text-align: right;
+  display: block;
+  margin-top: 8rpx;
+}
+
+.tips {
+  margin-top: 40rpx;
+  padding: 24rpx;
+  background: #FFF3E0;
+  border-radius: 8rpx;
+  border-left: 4rpx solid #FF9800;
+}
+
+.tips text {
+  display: block;
+  font-size: 24rpx;
+  color: #666;
+  line-height: 1.8;
+  margin-bottom: 8rpx;
+}

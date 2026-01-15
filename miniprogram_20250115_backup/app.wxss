@@ -1,0 +1,188 @@
+/* app.wxss */
+page {
+  background-color: #F5F5F5;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+}
+
+.container {
+  padding: 20rpx;
+}
+
+/* 通用样式 */
+.btn-primary {
+  background-color: #D32F2F;
+  color: white;
+  border: none;
+  border-radius: 8rpx;
+  padding: 24rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 40rpx;
+}
+
+.btn-primary:active {
+  background-color: #B71C1C;
+}
+
+.btn-secondary {
+  background-color: #FFFFFF;
+  color: #D32F2F;
+  border: 2rpx solid #D32F2F;
+  border-radius: 8rpx;
+  padding: 24rpx;
+  font-size: 32rpx;
+  text-align: center;
+  margin-top: 20rpx;
+}
+
+.card {
+  background: white;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+}
+
+.card-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.form-item {
+  margin-bottom: 30rpx;
+}
+
+.form-label {
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 12rpx;
+  display: block;
+}
+
+/* 通用输入框 - 优化样式 */
+.form-input {
+  width: 100%;
+  padding: 24rpx 20rpx;
+  border: 2rpx solid #E0E0E0;
+  border-radius: 8rpx;
+  font-size: 32rpx;
+  box-sizing: border-box;
+  min-height: 88rpx;
+  line-height: 1.5;
+  background-color: #FFFFFF;
+  color: #333333;
+}
+
+.form-input:focus {
+  border-color: #D32F2F;
+  outline: none;
+}
+
+.form-hint {
+  font-size: 24rpx;
+  color: #D32F2F;
+  margin-top: 12rpx;
+  line-height: 1.5;
+}
+
+/* 产品名称输入框 - 更高、更大字体 */
+.product-name-input {
+  width: 100%;
+  padding: 28rpx 24rpx;
+  border: 2rpx solid #E0E0E0;
+  border-radius: 8rpx;
+  font-size: 36rpx;
+  box-sizing: border-box;
+  min-height: 100rpx;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.product-name-input:focus {
+  border-color: #D32F2F;
+}
+
+.form-picker {
+  width: 100%;
+  padding: 20rpx;
+  border: 2rpx solid #E0E0E0;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  background: white;
+}
+
+.upload-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+  border: 2rpx dashed #E0E0E0;
+  border-radius: 8rpx;
+  background: #FAFAFA;
+}
+
+.upload-area:active {
+  border-color: #D32F2F;
+}
+
+.upload-icon {
+  font-size: 80rpx;
+  color: #999;
+  margin-bottom: 20rpx;
+}
+
+.upload-text {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.preview-image {
+  width: 100%;
+  height: 400rpx;
+  object-fit: contain;
+  border-radius: 8rpx;
+}
+
+.tag-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.tag {
+  padding: 12rpx 24rpx;
+  border-radius: 8rpx;
+  font-size: 26rpx;
+  background: #F5F5F5;
+  color: #666;
+}
+
+.tag.active {
+  background: #D32F2F;
+  color: white;
+}
+
+.radio-group {
+  display: flex;
+  gap: 20rpx;
+}
+
+.radio-item {
+  flex: 1;
+  padding: 20rpx;
+  border: 2rpx solid #E0E0E0;
+  border-radius: 8rpx;
+  text-align: center;
+  font-size: 28rpx;
+  color: #666;
+}
+
+.radio-item.active {
+  border-color: #D32F2F;
+  background: #FFF5F5;
+  color: #D32F2F;
+}

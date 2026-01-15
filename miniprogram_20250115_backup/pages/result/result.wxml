@@ -1,0 +1,93 @@
+<!--result.wxml-->
+<view class="container">
+  <!-- 视频结果 -->
+  <view wx:if="{{type === 'video'}}" class="result-section">
+    <view class="card">
+      <view class="card-title">🎬 视频生成成功</view>
+
+      <!-- 主视频（拼接后的视频或第一段视频） -->
+      <view class="video-container">
+        <video
+          class="video-player"
+          src="{{videoUrl}}"
+          controls
+          show-center-play-btn="{{true}}"
+          autoplay="{{false}}"
+          loop="{{false}}"
+          muted="{{false}}"
+        />
+      </view>
+
+      <!-- 多段视频信息提示 -->
+      <view class="video-info" wx:if="{{videoUrls.length > 1}}">
+        <text class="info-text">当前为拼接后的完整视频（{{videoUrls.length}}段拼接）</text>
+        <button class="btn-text" bindtap="toggleVideoDisplay">{{showAllVideos ? '收起分段视频' : '查看分段视频'}}</button>
+      </view>
+
+      <!-- 分段视频列表 -->
+      <view class="video-segments" wx:if="{{videoUrls.length > 1 && showAllVideos}}">
+        <view class="segment-header">分段视频</view>
+        <view class="segment-item" wx:for="{{videoParts}}" wx:key="part">
+          <view class="segment-info">
+            <text class="segment-title">第{{item.part}}段（{{item.duration}}秒）</text>
+            <text class="segment-hint">{{item.part === 1 ? '产品特写' : (item.part === videoParts.length ? '品牌总结' : '应用场景')}}</text>
+          </view>
+          <video
+            class="segment-video"
+            src="{{videoUrls[item.part - 1]}}"
+            controls
+            show-center-play-btn="{{true}}"
+            autoplay="{{false}}"
+            loop="{{false}}"
+            muted="{{false}}"
+          />
+          <button
+            class="btn-mini"
+            size="mini"
+            bindtap="downloadSpecificVideo"
+            data-index="{{item.part - 1}}"
+            data-url="{{videoUrls[item.part - 1]}}"
+          >下载此段</button>
+        </view>
+      </view>
+
+      <view class="action-buttons">
+        <button class="btn-primary" bindtap="downloadVideo">下载视频</button>
+        <button class="btn-secondary" bindtap="shareVideo">分享视频</button>
+      </view>
+
+      <view class="tips">
+        <text>• 视频中融入了红色 TNHO 商标</text>
+        <text>• 使用最新图生视频模型（doubao-seedance-1-5-pro-251215）</text>
+        <text>• 可用于产品宣传、社交媒体推广等</text>
+        <text>• 建议在 WiFi 环境下下载视频</text>
+        <text wx:if="{{videoUrls.length > 1}}">• 当前视频由{{videoUrls.length}}段拼接而成</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 脚本结果 -->
+  <view wx:if="{{type === 'script'}}" class="result-section">
+    <view class="card">
+      <view class="card-title">📝 脚本生成成功</view>
+
+      <view class="script-container">
+        <text class="script-content">{{scriptContent}}</text>
+      </view>
+
+      <view class="action-buttons">
+        <button class="btn-primary" bindtap="copyScript">复制脚本</button>
+        <button class="btn-secondary" bindtap="shareScript">分享脚本</button>
+      </view>
+
+      <view class="tips">
+        <text>• 脚本包含场景描述、文案/旁白、音效</text>
+        <text>• 可用于视频制作、营销推广等</text>
+        <text>• 建议结合产品实际情况调整内容</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 返回首页 -->
+  <button class="btn-secondary" bindtap="backToHome">返回首页</button>
+</view>
