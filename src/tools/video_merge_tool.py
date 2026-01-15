@@ -49,10 +49,10 @@ def download_video(video_url: str, download_dir: str) -> str:
         response = requests.get(video_url, stream=True, timeout=60)
         response.raise_for_status()
 
-        # 从URL中提取文件名
-        filename = video_url.split('/')[-1]
-        if not filename.endswith('.mp4'):
-            filename = f"{filename}.mp4"
+        # 使用简短的文件名，避免文件名过长
+        import hashlib
+        url_hash = hashlib.md5(video_url.encode()).hexdigest()[:16]
+        filename = f"video_{url_hash}.mp4"
 
         # 构建本地文件路径
         local_path = os.path.join(download_dir, filename)
