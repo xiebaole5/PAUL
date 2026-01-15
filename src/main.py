@@ -24,6 +24,10 @@ from tools.miniprogram_video_tool import (
     generate_miniprogram_video
 )
 
+# 导入企业微信路由
+from api.wechat_callback_simple import router as wechat_callback_router
+from api.enterprise_wechat import router as enterprise_wechat_router
+
 # 创建 FastAPI 应用
 app = FastAPI(
     title="天虹紧固件视频生成 API",
@@ -45,6 +49,10 @@ assets_dir = os.path.join(os.path.dirname(__file__), '..', 'assets')
 if not os.path.exists(assets_dir):
     os.makedirs(assets_dir, exist_ok=True)
 app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+# 注册企业微信路由
+app.include_router(wechat_callback_router)
+app.include_router(enterprise_wechat_router)
 
 # 全局异常处理器
 @app.exception_handler(Exception)
