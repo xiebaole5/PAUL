@@ -46,6 +46,15 @@ if not os.path.exists(assets_dir):
     os.makedirs(assets_dir, exist_ok=True)
 app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
+# 全局异常处理器
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    logger.error(f"全局异常: {str(exc)}")
+    logger.error(f"请求路径: {request.url}")
+    import traceback
+    logger.error(f"错误堆栈:\n{traceback.format_exc()}")
+    raise HTTPException(status_code=500, detail=str(exc))
+
 # ==================== 请求模型定义 ====================
 
 class ScriptRequest(BaseModel):
