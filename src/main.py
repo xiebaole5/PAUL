@@ -205,6 +205,7 @@ async def upload_image(file: UploadFile = File(...)):
     返回：
     - image_url: 上传后的图片 URL
     """
+    print("[上传图片] ========== 函数被调用 ==========")
     try:
         print(f"[上传图片] 文件名: {file.filename}, 文件类型: {file.content_type}")
 
