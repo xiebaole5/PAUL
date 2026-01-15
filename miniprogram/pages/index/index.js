@@ -1,352 +1,344 @@
-// index.js
-const app = getApp()
-
+// pages/index/index.js
 Page({
   data: {
-    productName: '',
-    theme: '品质保证',
-    themes: ['品质保证', '技术创新', '工业应用', '品牌形象'],
-    duration: 20,
-    durations: [5, 10, 15, 20, 25, 30],
-    generateType: 'video',
-    scenario: '',
-    productImageUrl: '',
-    loading: false
+    // 步骤：0-输入信息，1-查看脚本，2-选择图片，3-生成视频，4-完成
+    step: 0,
+
+    // 表单数据
+    formData: {
+      productName: '',
+      usageScenario: '',
+      themeDirection: '',
+      productImageUrl: ''
+    },
+
+    // 生成的脚本
+    script: '',
+
+    // 生成的首尾帧图片
+    firstFrames: [],  // 首帧图片列表（2张）
+    lastFrames: [],   // 尾帧图片列表（2张）
+
+    // 用户选择的图片
+    selectedFirstFrame: '',
+    selectedLastFrame: '',
+
+    // 生成的视频
+    videoUrl: '',
+
+    // 加载状态
+    loading: false,
+    loadingText: '',
+
+    // 错误信息
+    error: ''
   },
 
-  onLoad(options) {
-    // 页面加载
-  },
-
-  // 产品名称输入
-  onProductNameInput(e) {
-    this.setData({
-      productName: e.detail.value
-    })
-  },
-
-  // 主题选择
-  onThemeSelect(e) {
-    this.setData({
-      theme: e.currentTarget.dataset.theme
-    })
-  },
-
-  // 时长选择
-  onDurationSelect(e) {
-    this.setData({
-      duration: e.currentTarget.dataset.duration
-    })
-  },
-
-  // 生成类型选择
-  onTypeSelect(e) {
-    this.setData({
-      generateType: e.currentTarget.dataset.type
-    })
-  },
-
-  // 场景描述输入
-  onScenarioInput(e) {
-    this.setData({
-      scenario: e.detail.value
-    })
-  },
-
-  // 选择图片
+  // 上传产品图片
   chooseImage() {
-    const that = this
-    wx.chooseMedia({
+    wx.chooseImage({
       count: 1,
-      mediaType: ['image'],
-      sourceType: ['album', 'camera'],
       sizeType: ['compressed'],
-      success(res) {
-        const tempFilePath = res.tempFiles[0].tempFilePath
-
-        // 检查文件大小（5MB = 5 * 1024 * 1024）
-        wx.getFileInfo({
-          filePath: tempFilePath,
-          success(fileInfo) {
-            if (fileInfo.size > 5 * 1024 * 1024) {
-              wx.showToast({
-                title: '图片大小不能超过 5MB',
-                icon: 'none'
-              })
-              return
-            }
-
-            // 上传图片
-            that.uploadImage(tempFilePath)
-          },
-          fail() {
-            wx.showToast({
-              title: '获取文件信息失败',
-              icon: 'none'
-            })
-          }
-        })
-      },
-      fail(err) {
-        console.error('选择图片失败', err)
-        wx.showToast({
-          title: '选择图片失败',
-          icon: 'none'
-        })
+      sourceType: ['album', 'camera'],
+      success: (res) => {
+        const tempFilePaths = res.tempFilePaths
+        this.uploadImage(tempFilePaths[0])
       }
     })
   },
 
-  // 上传图片
+  // 上传图片到服务器
   uploadImage(filePath) {
-    const that = this
     wx.showLoading({
-      title: '上传中...',
-      mask: true
+      title: '上传中...'
     })
 
+    const app = getApp()
+    const token = wx.getStorageSync('token') || ''
+
     wx.uploadFile({
-      url: `${app.globalData.apiUrl}/api/upload-image`,
+      url: `${app.globalData.apiBaseUrl}/api/v1/upload-image`,
       filePath: filePath,
       name: 'file',
-      success(res) {
+      header: {
+        'Authorization': token
+      },
+      success: (res) => {
         wx.hideLoading()
-        try {
-          const data = JSON.parse(res.data)
-          if (data.success) {
-            that.setData({
-              productImageUrl: data.image_url
-            })
-            wx.showToast({
-              title: '上传成功',
-              icon: 'success'
-            })
-          } else {
-            wx.showToast({
-              title: data.message || '上传失败',
-              icon: 'none'
-            })
-          }
-        } catch (err) {
-          console.error('解析响应失败', err)
+        const data = JSON.parse(res.data)
+
+        if (data.code === 0) {
+          this.setData({
+            'formData.productImageUrl': data.data.image_url
+          })
           wx.showToast({
-            title: '上传失败',
-            icon: 'none'
+            title: '上传成功',
+            icon: 'success'
+          })
+        } else {
+          wx.showToast({
+            title: data.message || '上传失败',
+            icon: 'error'
           })
         }
       },
-      fail(err) {
+      fail: (err) => {
         wx.hideLoading()
-        console.error('上传失败', err)
         wx.showToast({
-          title: '网络错误，上传失败',
-          icon: 'none'
+          title: '上传失败',
+          icon: 'error'
         })
+        console.error('上传失败:', err)
       }
     })
   },
 
-  // 删除图片
-  removeImage() {
+  // 输入框变化
+  onInputChange(e) {
+    const field = e.currentTarget.dataset.field
     this.setData({
-      productImageUrl: ''
+      [`formData.${field}`]: e.detail.value
     })
   },
 
-  // 生成视频
-  generateVideo() {
-    // 验证必填项
-    if (!this.data.productName) {
+  // 第一步：生成脚本
+  generateScript() {
+    const { productName, usageScenario, themeDirection, productImageUrl } = this.data.formData
+
+    // 验证表单
+    if (!productName || !usageScenario || !themeDirection) {
       wx.showToast({
-        title: '请输入产品名称',
+        title: '请填写完整信息',
         icon: 'none'
       })
       return
     }
 
-    const that = this
-    this.setData({ loading: true })
-
-    const requestData = {
-      product_name: this.data.productName,
-      theme: this.data.theme,
-      duration: this.data.duration,
-      type: this.data.generateType
+    if (!productImageUrl) {
+      wx.showToast({
+        title: '请上传产品图片',
+        icon: 'none'
+      })
+      return
     }
 
-    // 添加可选参数
-    if (this.data.scenario) {
-      requestData.scenario = this.data.scenario
-    }
-    if (this.data.productImageUrl) {
-      requestData.product_image_url = this.data.productImageUrl
-    }
+    this.setData({
+      loading: true,
+      loadingText: '正在生成脚本...'
+    })
 
-    // 根据生成类型设置不同的超时时间
-    const timeout = this.data.generateType === 'video' ? 5000 : 120000 // 视频异步5秒，脚本同步120秒
+    const app = getApp()
 
     wx.request({
-      url: `${app.globalData.apiUrl}/api/generate-video`,
+      url: `${app.globalData.apiBaseUrl}/api/v1/generate-script`,
       method: 'POST',
-      data: requestData,
-      header: {
-        'content-type': 'application/json'
+      data: {
+        product_name: productName,
+        product_image_url: productImageUrl,
+        usage_scenario: usageScenario,
+        theme_direction: themeDirection
       },
-      timeout: timeout,
-      success(res) {
-        that.setData({ loading: false })
-
-        if (res.data.success) {
-          const type = res.data.type || that.data.generateType
-
-          // 脚本类型仍然同步处理
-          if (type === 'script' && res.data.script_content) {
-            // 脚本生成成功，跳转到结果页
-            wx.navigateTo({
-              url: `/pages/result/result?type=script&scriptContent=${encodeURIComponent(res.data.script_content)}`
-            })
-            return
-          }
-
-          // 视频类型需要轮询进度
-          if (type === 'video' && res.data.task_id) {
-            that.pollProgress(res.data.task_id)
-          } else {
-            wx.showToast({
-              title: res.data.message || '生成失败',
-              icon: 'none'
-            })
-          }
-        } else {
+      success: (res) => {
+        if (res.data.code === 0) {
+          this.setData({
+            script: res.data.data.script,
+            step: 1
+          })
           wx.showToast({
-            title: res.data.message || '生成失败',
-            icon: 'none'
+            title: '脚本生成成功',
+            icon: 'success'
+          })
+        } else {
+          this.setData({
+            error: res.data.message || '脚本生成失败'
+          })
+          wx.showToast({
+            title: res.data.message || '脚本生成失败',
+            icon: 'error'
           })
         }
       },
-      fail(err) {
-        that.setData({ loading: false })
-        console.error('生成失败', err)
-
-        // 更友好的错误提示
-        let errorMessage = '网络错误，生成失败'
-        if (err.errMsg && err.errMsg.includes('timeout')) {
-          errorMessage = this.data.generateType === 'script'
-            ? '生成超时，请稍后重试或减少时长'
-            : '请求超时，请检查网络连接'
-        } else if (err.errMsg && err.errMsg.includes('fail')) {
-          errorMessage = '服务器连接失败，请检查网络或稍后重试'
-        }
-
+      fail: (err) => {
+        this.setData({
+          error: '网络请求失败'
+        })
         wx.showToast({
-          title: errorMessage,
-          icon: 'none',
-          duration: 3000
+          title: '网络请求失败',
+          icon: 'error'
+        })
+        console.error('请求失败:', err)
+      },
+      complete: () => {
+        this.setData({
+          loading: false
         })
       }
     })
   },
 
-  // 轮询任务进度
-  pollProgress(taskId) {
-    const that = this
-    let pollingCount = 0
-    const maxPollingCount = 180 // 最多轮询3分钟（2秒一次）
-
-    wx.showLoading({
-      title: '生成中 0%',
-      mask: true
+  // 确认脚本，继续生成图片
+  confirmScript() {
+    this.setData({
+      loading: true,
+      loadingText: '正在生成图片...'
     })
 
-    const poll = () => {
-      pollingCount++
+    const app = getApp()
 
-      wx.request({
-        url: `${app.globalData.apiUrl}/api/progress/${taskId}`,
-        method: 'GET',
-        timeout: 5000,
-        success(res) {
-          if (res.data.success && res.data.progress !== undefined) {
-            const progress = res.data.progress
-            const status = res.data.status
-
-            // 更新进度提示
-            wx.showLoading({
-              title: `${res.data.message || `生成中 ${progress}%`}`,
-              mask: true
-            })
-
-            // 检查是否完成
-            if (status === 'completed') {
-              wx.hideLoading()
-
-              // 准备跳转参数
-              const params = {
-                type: 'video',
-                videoUrl: res.data.merged_video_url || (res.data.video_urls && res.data.video_urls[0]),
-                mainVideo: res.data.merged_video_url || (res.data.video_urls && res.data.video_urls[0])
-              }
-
-              // 如果有多段视频，添加分段信息
-              if (res.data.video_urls && res.data.video_urls.length > 1) {
-                params.videoUrls = JSON.stringify(res.data.video_urls)
-                params.mergedVideoUrl = res.data.merged_video_url || ''
-              }
-
-              // 将参数转换为查询字符串
-              const queryString = Object.keys(params)
-                .map(key => `${key}=${encodeURIComponent(params[key])}`)
-                .join('&')
-
-              // 跳转到结果页
-              wx.navigateTo({
-                url: `/pages/result/result?${queryString}`
-              })
-
-            } else if (status === 'failed') {
-              wx.hideLoading()
-              wx.showToast({
-                title: res.data.error_message || '生成失败',
-                icon: 'none',
-                duration: 3000
-              })
-            } else if (pollingCount < maxPollingCount) {
-              // 继续轮询
-              setTimeout(poll, 2000) // 2秒后再次查询
-            } else {
-              // 超时
-              wx.hideLoading()
-              wx.showToast({
-                title: '生成超时，请稍后查看',
-                icon: 'none'
-              })
-            }
-          } else {
-            // 响应失败
-            wx.hideLoading()
-            wx.showToast({
-              title: res.data.message || '查询进度失败',
-              icon: 'none'
-            })
-          }
-        },
-        fail(err) {
-          console.error('查询进度失败', err)
-          if (pollingCount < maxPollingCount) {
-            // 继续轮询
-            setTimeout(poll, 2000)
-          } else {
-            wx.hideLoading()
-            wx.showToast({
-              title: '网络错误，无法查询进度',
-              icon: 'none'
-            })
-          }
+    wx.request({
+      url: `${app.globalData.apiBaseUrl}/api/v1/generate-frames`,
+      method: 'POST',
+      data: {
+        script: this.data.script,
+        product_name: this.data.formData.productName,
+        product_image_url: this.data.formData.productImageUrl
+      },
+      success: (res) => {
+        if (res.data.code === 0) {
+          this.setData({
+            firstFrames: res.data.data.first_frames,
+            lastFrames: res.data.data.last_frames,
+            step: 2
+          })
+          wx.showToast({
+            title: '图片生成成功',
+            icon: 'success'
+          })
+        } else {
+          this.setData({
+            error: res.data.message || '图片生成失败'
+          })
+          wx.showToast({
+            title: res.data.message || '图片生成失败',
+            icon: 'error'
+          })
         }
+      },
+      fail: (err) => {
+        this.setData({
+          error: '网络请求失败'
+        })
+        wx.showToast({
+          title: '网络请求失败',
+          icon: 'error'
+        })
+        console.error('请求失败:', err)
+      },
+      complete: () => {
+        this.setData({
+          loading: false
+        })
+      }
+    })
+  },
+
+  // 选择首帧图片
+  selectFirstFrame(e) {
+    const url = e.currentTarget.dataset.url
+    this.setData({
+      selectedFirstFrame: url
+    })
+  },
+
+  // 选择尾帧图片
+  selectLastFrame(e) {
+    const url = e.currentTarget.dataset.url
+    this.setData({
+      selectedLastFrame: url
+    })
+  },
+
+  // 确认图片，开始生成视频
+  confirmFrames() {
+    if (!this.data.selectedFirstFrame || !this.data.selectedLastFrame) {
+      wx.showToast({
+        title: '请选择首尾帧图片',
+        icon: 'none'
       })
+      return
     }
 
-    // 开始轮询
-    poll()
+    this.setData({
+      loading: true,
+      loadingText: '正在生成视频，请稍候...（约 3-5 分钟）'
+    })
+
+    const app = getApp()
+
+    wx.request({
+      url: `${app.globalData.apiBaseUrl}/api/v1/generate-video`,
+      method: 'POST',
+      data: {
+        script: this.data.script,
+        product_name: this.data.formData.productName,
+        product_image_url: this.data.formData.productImageUrl,
+        selected_first_frame: this.data.selectedFirstFrame,
+        selected_last_frame: this.data.selectedLastFrame
+      },
+      success: (res) => {
+        if (res.data.code === 0) {
+          this.setData({
+            videoUrl: res.data.data.video_url,
+            step: 3
+          })
+          wx.showToast({
+            title: '视频生成成功',
+            icon: 'success'
+          })
+        } else {
+          this.setData({
+            error: res.data.message || '视频生成失败'
+          })
+          wx.showToast({
+            title: res.data.message || '视频生成失败',
+            icon: 'error'
+          })
+        }
+      },
+      fail: (err) => {
+        this.setData({
+          error: '网络请求失败'
+        })
+        wx.showToast({
+          title: '网络请求失败',
+          icon: 'error'
+        })
+        console.error('请求失败:', err)
+      },
+      complete: () => {
+        this.setData({
+          loading: false
+        })
+      }
+    })
+  },
+
+  // 重新开始
+  reset() {
+    this.setData({
+      step: 0,
+      formData: {
+        productName: '',
+        usageScenario: '',
+        themeDirection: '',
+        productImageUrl: ''
+      },
+      script: '',
+      firstFrames: [],
+      lastFrames: [],
+      selectedFirstFrame: '',
+      selectedLastFrame: '',
+      videoUrl: '',
+      error: ''
+    })
+  },
+
+  // 返回上一步
+  goBack() {
+    if (this.data.step > 0) {
+      this.setData({
+        step: this.data.step - 1
+      })
+    }
   }
 })

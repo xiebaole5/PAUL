@@ -1,127 +1,164 @@
-<!--index.wxml-->
+<!--pages/index/index.wxml-->
 <view class="container">
-  <!-- 标题 -->
-  <view class="header">
-    <text class="header-title">天虹紧固件</text>
-    <text class="header-subtitle">AI视频生成系统</text>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-overlay">
+    <view class="loading-content">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">{{loadingText}}</text>
+    </view>
   </view>
 
-  <!-- 产品名称 -->
-  <view class="card">
-    <view class="card-title">产品信息</view>
-    <view class="form-item">
-      <text class="form-label">产品名称 *</text>
-      <input
-        class="product-name-input"
-        placeholder="请输入产品名称"
-        placeholder-style="font-size: 32rpx; color: #999;"
-        value="{{productName}}"
-        bindinput="onProductNameInput"
-        maxlength="50"
-      />
+  <!-- 错误提示 -->
+  <view wx:if="{{error}}" class="error-message">
+    <text>{{error}}</text>
+  </view>
+
+  <!-- 步骤 0: 输入产品信息 -->
+  <view wx:if="{{step === 0}}" class="step-container">
+    <view class="step-header">
+      <text class="step-title">第 1 步：填写产品信息</text>
+      <text class="step-desc">填写产品信息，生成广告脚本</text>
     </view>
 
-    <!-- 主题选择 -->
-    <view class="form-item">
-      <text class="form-label">宣传主题</text>
-      <view class="tag-group">
-        <text
-          class="tag {{theme === item ? 'active' : ''}}"
-          wx:for="{{themes}}"
-          wx:key="*this"
-          bindtap="onThemeSelect"
-          data-theme="{{item}}"
-        >{{item}}</text>
+    <view class="form-section">
+      <!-- 产品名称 -->
+      <view class="form-item">
+        <text class="form-label">产品名称 *</text>
+        <input
+          class="form-input"
+          placeholder="例如：高强度螺栓"
+          value="{{formData.productName}}"
+          data-field="productName"
+          bindinput="onInputChange"
+        />
       </view>
+
+      <!-- 使用场景 -->
+      <view class="form-item">
+        <text class="form-label">使用场景 *</text>
+        <textarea
+          class="form-textarea"
+          placeholder="例如：用于汽车底盘连接，承受高强度拉力"
+          value="{{formData.usageScenario}}"
+          data-field="usageScenario"
+          bindinput="onInputChange"
+          maxlength="200"
+        />
+      </view>
+
+      <!-- 主题方向 -->
+      <view class="form-item">
+        <text class="form-label">主题方向 *</text>
+        <input
+          class="form-input"
+          placeholder="例如：品质保证、技术创新"
+          value="{{formData.themeDirection}}"
+          data-field="themeDirection"
+          bindinput="onInputChange"
+        />
+      </view>
+
+      <!-- 产品图片 -->
+      <view class="form-item">
+        <text class="form-label">产品图片 *</text>
+        <view class="upload-section">
+          <image wx:if="{{formData.productImageUrl}}" class="preview-image" src="{{formData.productImageUrl}}" mode="aspectFit" />
+          <button wx:else class="upload-btn" bindtap="chooseImage">
+            <text class="upload-icon">+</text>
+            <text>上传图片</text>
+          </button>
+        </view>
+      </view>
+
+      <!-- 提交按钮 -->
+      <button class="submit-btn" bindtap="generateScript" disabled="{{loading}}">
+        生成脚本
+      </button>
     </view>
   </view>
 
-  <!-- 视频配置 -->
-  <view class="card">
-    <view class="card-title">视频配置</view>
+  <!-- 步骤 1: 查看脚本 -->
+  <view wx:if="{{step === 1}}" class="step-container">
+    <view class="step-header">
+      <text class="step-title">第 2 步：查看生成的脚本</text>
+      <text class="step-desc">确认脚本内容后继续</text>
+    </view>
 
-    <!-- 生成类型 -->
-    <view class="form-item">
-      <text class="form-label">生成类型</text>
-      <view class="radio-group">
+    <view class="script-content">
+      <text class="script-text">{{script}}</text>
+    </view>
+
+    <view class="action-buttons">
+      <button class="secondary-btn" bindtap="goBack">返回</button>
+      <button class="primary-btn" bindtap="confirmScript">确认并继续</button>
+    </view>
+  </view>
+
+  <!-- 步骤 2: 选择首尾帧图片 -->
+  <view wx:if="{{step === 2}}" class="step-container">
+    <view class="step-header">
+      <text class="step-title">第 3 步：选择首尾帧图片</text>
+      <text class="step-desc">各选择一张图片用于视频开头和结尾</text>
+    </view>
+
+    <!-- 首帧图片选择 -->
+    <view class="frame-section">
+      <text class="frame-title">选择首帧图片（视频开头）</text>
+      <view class="image-grid">
         <view
-          class="radio-item {{generateType === 'video' ? 'active' : ''}}"
-          bindtap="onTypeSelect"
-          data-type="video"
-        >生成视频</view>
+          wx:for="{{firstFrames}}"
+          wx:key="index"
+          class="image-item {{selectedFirstFrame === item ? 'selected' : ''}}"
+          data-url="{{item}}"
+          bindtap="selectFirstFrame"
+        >
+          <image class="frame-image" src="{{item}}" mode="aspectFill" />
+          <view wx:if="{{selectedFirstFrame === item}}" class="selected-badge">✓</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 尾帧图片选择 -->
+    <view class="frame-section">
+      <text class="frame-title">选择尾帧图片（视频结尾）</text>
+      <view class="image-grid">
         <view
-          class="radio-item {{generateType === 'script' ? 'active' : ''}}"
-          bindtap="onTypeSelect"
-          data-type="script"
-        >生成脚本</view>
+          wx:for="{{lastFrames}}"
+          wx:key="index"
+          class="image-item {{selectedLastFrame === item ? 'selected' : ''}}"
+          data-url="{{item}}"
+          bindtap="selectLastFrame"
+        >
+          <image class="frame-image" src="{{item}}" mode="aspectFill" />
+          <view wx:if="{{selectedLastFrame === item}}" class="selected-badge">✓</view>
+        </view>
       </view>
     </view>
 
-    <!-- 时长选择 -->
-    <view class="form-item">
-      <text class="form-label">视频时长（秒）</text>
-      <view class="tag-group">
-        <text
-          class="tag {{duration === item ? 'active' : ''}}"
-          wx:for="{{durations}}"
-          wx:key="*this"
-          bindtap="onDurationSelect"
-          data-duration="{{item}}"
-        >{{item}}秒</text>
-      </view>
-      <text class="form-hint" wx:if="{{duration >= 15}}">注：{{duration}}秒视频将自动分段生成并拼接</text>
+    <view class="action-buttons">
+      <button class="secondary-btn" bindtap="goBack">返回</button>
+      <button class="primary-btn" bindtap="confirmFrames" disabled="{{!selectedFirstFrame || !selectedLastFrame}}">
+        生成视频
+      </button>
     </view>
   </view>
 
-  <!-- 产品图片上传 -->
-  <view class="card">
-    <view class="card-title">产品图片</view>
-    <view class="form-item">
-      <text class="form-label">上传产品图片（选填，推荐）</text>
-      <view class="upload-area" bindtap="chooseImage" wx:if="{{!productImageUrl}}">
-        <text class="upload-icon">📷</text>
-        <text class="upload-text">点击上传产品图片</text>
-        <text class="upload-text">支持图生视频，提升生成质量</text>
-        <text class="upload-text-small">支持 JPG、PNG，最大 5MB</text>
-      </view>
-      <image wx:else class="preview-image" src="{{productImageUrl}}" mode="aspectFit" bindtap="chooseImage" />
-      <view class="upload-actions" wx:if="{{productImageUrl}}">
-        <button class="btn-secondary" size="mini" bindtap="removeImage">删除图片</button>
-      </view>
+  <!-- 步骤 3: 视频生成完成 -->
+  <view wx:if="{{step === 3}}" class="step-container">
+    <view class="step-header">
+      <text class="step-title">🎉 视频生成完成！</text>
+      <text class="step-desc">20秒广告视频已生成</text>
+    </view>
+
+    <view class="video-section">
+      <video class="result-video" src="{{videoUrl}}" controls></video>
+    </view>
+
+    <view class="action-buttons">
+      <button class="secondary-btn" bindtap="reset">重新制作</button>
+      <button class="primary-btn" open-type="share">分享视频</button>
     </view>
   </view>
 
-  <!-- 场景描述 -->
-  <view class="card">
-    <view class="card-title">使用场景</view>
-    <view class="form-item">
-      <text class="form-label">场景描述（选填，最多200字）</text>
-      <textarea
-        class="form-input"
-        placeholder="描述产品的使用场景，例如：汽车制造、太阳能支架、机械设备等"
-        value="{{scenario}}"
-        bindinput="onScenarioInput"
-        maxlength="200"
-        show-confirm-bar="{{false}}"
-        auto-height
-      />
-      <text class="char-count">{{scenario.length}}/200</text>
-    </view>
-  </view>
-
-  <!-- 生成按钮 -->
-  <button
-    class="btn-primary"
-    bindtap="generateVideo"
-    disabled="{{loading}}"
-    loading="{{loading}}"
-  >{{loading ? '生成中...' : '立即生成'}}</button>
-
-  <!-- 说明 -->
-  <view class="tips">
-    <text>• 融入红色 TNHO 商标（天虹）</text>
-    <text>• 支持图生视频：上传产品图片可提升生成质量</text>
-    <text>• 支持多种主题和时长选择</text>
-    <text>• 超过12秒的视频自动分段生成并拼接</text>
-  </view>
 </view>
