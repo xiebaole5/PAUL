@@ -4,6 +4,7 @@ FastAPI 后端服务 - 微信小程序视频生成 API
 """
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional
 import uvicorn
@@ -33,6 +34,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 挂载静态文件目录 - 用于访问上传的图片
+assets_dir = os.path.join(os.path.dirname(__file__), '..', 'assets')
+if not os.path.exists(assets_dir):
+    os.makedirs(assets_dir, exist_ok=True)
+app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
 # ==================== 请求模型定义 ====================
 
@@ -199,37 +206,31 @@ async def upload_image(file: UploadFile = File(...)):
     - image_url: 上传后的图片 URL
     """
     try:
-        # 使用对象存储上传图片
-        from coze_coding_dev_sdk.s3 import S3SyncStorage
-
-        storage = S3SyncStorage(
-            endpoint_url=os.getenv("COZE_BUCKET_ENDPOINT_URL"),
-            access_key="",
-            secret_key="",
-            bucket_name=os.getenv("COZE_BUCKET_NAME"),
-            region="cn-beijing",
-        )
-
         # 读取文件内容
         content = await file.read()
+        file_extension = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
 
-        # 上传到对象存储
-        file_name = f"miniprogram_images/{file.filename}"
-        key = storage.upload_file(
-            file_content=content,
-            file_name=file_name,
-            content_type=file.content_type
-        )
+        # 生成唯一文件名
+        import uuid
+        unique_filename = f"{uuid.uuid4().hex}.{file_extension}"
 
-        # 生成签名 URL
-        image_url = storage.generate_presigned_url(key=key, expire_time=3600 * 24 * 7)  # 7天有效期
+        # 保存到本地 assets 目录
+        assets_dir = os.path.join(os.path.dirname(__file__), '..', 'assets', 'uploads')
+        os.makedirs(assets_dir, exist_ok=True)
+        file_path = os.path.join(assets_dir, unique_filename)
+
+        with open(file_path, 'wb') as f:
+            f.write(content)
+
+        # 返回本地访问 URL（开发环境）
+        image_url = f"http://localhost:8000/assets/uploads/{unique_filename}"
 
         return {
             "code": 0,
             "message": "图片上传成功",
             "data": {
                 "image_url": image_url,
-                "file_key": key
+                "file_key": unique_filename
             }
         }
     except Exception as e:
