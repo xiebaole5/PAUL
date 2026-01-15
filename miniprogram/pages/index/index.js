@@ -54,10 +54,14 @@ Page({
     })
 
     const app = getApp()
-    const token = wx.getStorageSync('token') || ''
+    const token = wx.getStorageSync('token') ''
+    const uploadUrl = `${app.globalData.apiBaseUrl}/api/v1/upload-image`
+
+    console.log('上传地址:', uploadUrl)
+    console.log('文件路径:', filePath)
 
     wx.uploadFile({
-      url: `${app.globalData.apiBaseUrl}/api/v1/upload-image`,
+      url: uploadUrl,
       filePath: filePath,
       name: 'file',
       header: {
@@ -65,7 +69,10 @@ Page({
       },
       success: (res) => {
         wx.hideLoading()
+        console.log('上传响应:', res)
+
         const data = JSON.parse(res.data)
+        console.log('上传数据:', data)
 
         if (data.code === 0) {
           this.setData({
@@ -84,11 +91,14 @@ Page({
       },
       fail: (err) => {
         wx.hideLoading()
-        wx.showToast({
-          title: '上传失败',
-          icon: 'error'
-        })
         console.error('上传失败:', err)
+        console.error('错误信息:', JSON.stringify(err))
+
+        wx.showModal({
+          title: '上传失败',
+          content: `错误: ${err.errMsg}\n\n请确保：\n1. 后端服务已启动\n2. 已勾选"不校验合法域名"`,
+          showCancel: false
+        })
       }
     })
   },
