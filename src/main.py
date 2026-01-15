@@ -10,6 +10,11 @@ from typing import Optional
 import uvicorn
 import json
 import os
+import logging
+
+# 配置日志
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 # 导入小程序 Agent
 from agents.miniprogram_video_agent import build_agent
@@ -205,34 +210,34 @@ async def upload_image(file: UploadFile = File(...)):
     返回：
     - image_url: 上传后的图片 URL
     """
-    print("[上传图片] ========== 函数被调用 ==========")
+    logger.info("========== 上传图片函数被调用 ==========")
     try:
-        print(f"[上传图片] 文件名: {file.filename}, 文件类型: {file.content_type}")
+        logger.info(f"文件名: {file.filename}, 文件类型: {file.content_type}")
 
         # 读取文件内容
         content = await file.read()
-        print(f"[上传图片] 文件大小: {len(content)} bytes")
+        logger.info(f"文件大小: {len(content)} bytes")
 
         file_extension = file.filename.split('.')[-1] if file.filename and '.' in file.filename else 'jpg'
-        print(f"[上传图片] 文件扩展名: {file_extension}")
+        logger.info(f"文件扩展名: {file_extension}")
 
         # 生成唯一文件名
         import uuid
         unique_filename = f"{uuid.uuid4().hex}.{file_extension}"
-        print(f"[上传图片] 唯一文件名: {unique_filename}")
+        logger.info(f"唯一文件名: {unique_filename}")
 
         # 保存到本地 assets 目录
         assets_dir = os.path.join(os.path.dirname(__file__), '..', 'assets', 'uploads')
-        print(f"[上传图片] 目标目录: {assets_dir}")
+        logger.info(f"目标目录: {assets_dir}")
 
         os.makedirs(assets_dir, exist_ok=True)
         file_path = os.path.join(assets_dir, unique_filename)
-        print(f"[上传图片] 完整文件路径: {file_path}")
+        logger.info(f"完整文件路径: {file_path}")
 
         with open(file_path, 'wb') as f:
             f.write(content)
 
-        print(f"[上传图片] 文件保存成功")
+        logger.info("文件保存成功")
 
         # 返回本地访问 URL（开发环境）
         image_url = f"http://localhost:8000/assets/uploads/{unique_filename}"
@@ -247,8 +252,8 @@ async def upload_image(file: UploadFile = File(...)):
         }
     except Exception as e:
         import traceback
-        print(f"[上传图片] 错误: {str(e)}")
-        print(f"[上传图片] 错误堆栈:\n{traceback.format_exc()}")
+        logger.error(f"错误: {str(e)}")
+        logger.error(f"错误堆栈:\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"图片上传失败: {str(e)}")
 
 # ==================== 启动服务 ====================
