@@ -35,8 +35,9 @@ from storage.database.db import get_session
 from storage.database.session import get_db_session
 from storage.database.video_task_manager import VideoTaskManager, VideoTaskCreate, VideoTaskResponse
 
-# 导入企业微信模块（使用简化版本）
-from src.api.wechat_callback_simple import router as wechat_router
+# 导入企业微信模块
+from src.api.wechat_callback_simple import router as wechat_callback_router
+from src.api.enterprise_wechat import router as enterprise_wechat_router
 
 # 导入请求日志中间件
 from src.api.middleware import RequestLoggingMiddleware
@@ -57,7 +58,8 @@ assets_path.mkdir(parents=True, exist_ok=True)
 app.mount("/assets", StaticFiles(directory=str(assets_path)), name="assets")
 
 # 注册企业微信路由
-app.include_router(wechat_router)
+app.include_router(wechat_callback_router)
+app.include_router(enterprise_wechat_router)
 
 # 请求模型
 class VideoGenerateRequest(BaseModel):
