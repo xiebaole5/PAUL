@@ -340,5 +340,22 @@ Page({
         step: this.data.step - 1
       })
     }
+  },
+
+  // 处理视频分享事件
+  onShareVideo() {
+    wx.showToast({
+      title: '分享功能',
+      icon: 'none'
+    })
+  },
+
+  // 页面分享配置
+  onShareAppMessage() {
+    return {
+      title: '天虹紧固件视频生成',
+      path: '/pages/index/index',
+      imageUrl: ''
+    }
   }
 })

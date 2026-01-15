@@ -8,6 +8,7 @@
     "navigationBarTitleText": "天虹紧固件",
     "navigationBarTextStyle": "black"
   },
+  "lazyCodeLoading": "requiredComponents",
   "style": "v2",
   "sitemapLocation": "sitemap.json"
 }

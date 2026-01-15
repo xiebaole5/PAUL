@@ -1,3 +1,9 @@
 {
-  "navigationBarTitleText": "视频生成"
+  "navigationBarTitleText": "视频生成",
+  "usingComponents": {
+    "video-result": "../../components/video-result/video-result"
+  },
+  "componentPlaceholder": {
+    "video-result": "../../components/video-result-placeholder/video-result-placeholder"
+  }
 }

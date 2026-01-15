@@ -1,0 +1,75 @@
+/* components/video-result/video-result.wxss */
+.video-result-container {
+  background: white;
+  border-radius: 20rpx;
+  padding: 40rpx 30rpx;
+  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.1);
+}
+
+.video-header {
+  margin-bottom: 40rpx;
+  text-align: center;
+}
+
+.video-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 10rpx;
+}
+
+.video-desc {
+  font-size: 26rpx;
+  color: #999;
+  display: block;
+}
+
+.video-wrapper {
+  margin-top: 30rpx;
+  border-radius: 10rpx;
+  overflow: hidden;
+  background: #000;
+}
+
+.result-video {
+  width: 100%;
+  height: 400rpx;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 20rpx;
+  margin-top: 40rpx;
+}
+
+.primary-btn {
+  flex: 1;
+  height: 90rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 45rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+.primary-btn::after {
+  border: none;
+}
+
+.secondary-btn {
+  flex: 1;
+  height: 90rpx;
+  background: #f5f5f5;
+  color: #333;
+  border: none;
+  border-radius: 45rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+.secondary-btn::after {
+  border: none;
+}

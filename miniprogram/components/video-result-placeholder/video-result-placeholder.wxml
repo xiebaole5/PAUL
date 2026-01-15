@@ -1,0 +1,5 @@
+<!--components/video-result-placeholder/video-result-placeholder.wxml-->
+<view class="placeholder-container">
+  <view class="loading-spinner"></view>
+  <text class="placeholder-text">正在加载视频组件...</text>
+</view>

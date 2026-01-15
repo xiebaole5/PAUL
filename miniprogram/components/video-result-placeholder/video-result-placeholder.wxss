@@ -1,0 +1,32 @@
+/* components/video-result-placeholder/video-result-placeholder.wxss */
+.placeholder-container {
+  background: white;
+  border-radius: 20rpx;
+  padding: 100rpx 30rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.1);
+}
+
+.loading-spinner {
+  width: 60rpx;
+  height: 60rpx;
+  border: 6rpx solid #f3f3f3;
+  border-top: 6rpx solid #667eea;
+  border-radius: 50%;
+  margin-bottom: 20rpx;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.placeholder-text {
+  font-size: 28rpx;
+  color: #666;
+  text-align: center;
+}

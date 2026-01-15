@@ -146,19 +146,12 @@
 
   <!-- 步骤 3: 视频生成完成 -->
   <view wx:if="{{step === 3}}" class="step-container">
-    <view class="step-header">
-      <text class="step-title">🎉 视频生成完成！</text>
-      <text class="step-desc">20秒广告视频已生成</text>
-    </view>
-
-    <view class="video-section">
-      <video class="result-video" src="{{videoUrl}}" controls></video>
-    </view>
-
-    <view class="action-buttons">
-      <button class="secondary-btn" bindtap="reset">重新制作</button>
-      <button class="primary-btn" open-type="share">分享视频</button>
-    </view>
+    <!-- 使用用时注入组件 -->
+    <video-result
+      videoUrl="{{videoUrl}}"
+      bind:sharevideo="onShareVideo"
+      bind:reset="reset"
+    />
   </view>
 
 </view>

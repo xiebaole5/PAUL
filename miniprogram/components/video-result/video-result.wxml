@@ -1,0 +1,24 @@
+<!--components/video-result/video-result.wxml-->
+<view class="video-result-container">
+  <view class="video-header">
+    <text class="video-title">🎉 视频生成完成！</text>
+    <text class="video-desc">20秒广告视频已生成</text>
+  </view>
+
+  <view class="video-wrapper">
+    <video
+      class="result-video"
+      src="{{videoUrl}}"
+      controls
+      show-center-play-btn="{{true}}"
+      autoplay="{{false}}"
+      bindplay="onPlay"
+      bindpause="onPause"
+    ></video>
+  </view>
+
+  <view class="action-buttons">
+    <button class="secondary-btn" bindtap="onReset">重新制作</button>
+    <button class="primary-btn" open-type="share">分享视频</button>
+  </view>
+</view>
