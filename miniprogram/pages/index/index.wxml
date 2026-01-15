@@ -3,6 +3,7 @@
 
   <!-- 退出登录按钮 -->
   <view class="logout-bar">
+    <text class="version-text">v{{version}}</text>
     <text class="logout-btn" bindtap="handleLogout">退出登录</text>
   </view>
 

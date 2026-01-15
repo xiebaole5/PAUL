@@ -1,6 +1,9 @@
 // pages/index/index.js
 Page({
   data: {
+    // 版本号
+    version: '',
+
     // 步骤：0-输入信息，1-查看脚本，2-选择图片，3-生成视频，4-完成
     step: 0,
 
@@ -32,6 +35,14 @@ Page({
 
     // 错误信息
     error: ''
+  },
+
+  onLoad() {
+    // 获取版本号
+    const app = getApp()
+    this.setData({
+      version: app.globalData.version
+    })
   },
 
   // 上传产品图片

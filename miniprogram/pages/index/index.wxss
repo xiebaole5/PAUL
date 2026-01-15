@@ -9,6 +9,15 @@
 .logout-bar {
   padding: 10rpx 20rpx;
   text-align: right;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.version-text {
+  color: white;
+  font-size: 24rpx;
+  opacity: 0.8;
 }
 
 .logout-btn {

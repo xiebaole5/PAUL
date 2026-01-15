@@ -1,6 +1,9 @@
 // app.js
 App({
   globalData: {
+    // 小程序版本
+    version: '1.1.2',
+
     // 后端 API 地址
     // 开发环境: http://localhost:8000
     // 生产环境: https://tnho-fasteners.com

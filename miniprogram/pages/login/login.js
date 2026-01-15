@@ -4,7 +4,16 @@ Page({
     username: '',
     password: '',
     showPassword: false,
-    loading: false
+    loading: false,
+    version: ''
+  },
+
+  onLoad() {
+    // 获取版本号
+    const app = getApp()
+    this.setData({
+      version: app.globalData.version
+    })
   },
 
   // 用户名输入

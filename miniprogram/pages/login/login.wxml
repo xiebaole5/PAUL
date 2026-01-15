@@ -51,6 +51,6 @@
 
   <!-- 页脚 -->
   <view class="footer">
-    <text class="footer-text">© 2025 天虹紧固件</text>
+    <text class="footer-text">© 2025 天虹紧固件 v{{version}}</text>
   </view>
 </view>
