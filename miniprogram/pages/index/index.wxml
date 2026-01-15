@@ -70,7 +70,7 @@
         <text class="form-label">产品图片 *</text>
         <view class="upload-section">
           <image wx:if="{{formData.productImageUrl}}" class="preview-image" src="{{formData.productImageUrl}}" mode="aspectFit" />
-          <button wx:else class="upload-btn" bindtap="chooseImage">
+          <button wx:else class="upload-btn" bindtap="chooseImage" id="uploadImageBtn">
             <text class="upload-icon">+</text>
             <text>上传图片</text>
           </button>

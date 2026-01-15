@@ -47,25 +47,42 @@ Page({
 
   // 上传产品图片
   chooseImage() {
+    console.log('===== chooseImage 函数被调用 =====')
+
     wx.chooseImage({
       count: 1,
       sizeType: ['compressed'],
       sourceType: ['album', 'camera'],
       success: (res) => {
+        console.log('===== chooseImage success 回调 =====')
+        console.log('res:', res)
+        console.log('tempFilePaths:', res.tempFilePaths)
+
         const tempFilePaths = res.tempFilePaths
-        this.uploadImage(tempFilePaths[0])
+        if (tempFilePaths && tempFilePaths.length > 0) {
+          console.log('即将调用 uploadImage，文件路径:', tempFilePaths[0])
+          this.uploadImage(tempFilePaths[0])
+        } else {
+          console.error('tempFilePaths 为空！')
+        }
+      },
+      fail: (err) => {
+        console.error('chooseImage 失败:', err)
       }
     })
   },
 
   // 上传图片到服务器
   uploadImage(filePath) {
+    console.log('===== uploadImage 函数被调用 =====')
+    console.log('filePath:', filePath)
+
     wx.showLoading({
       title: '上传中...'
     })
 
     const app = getApp()
-    const token = wx.getStorageSync('token') ''
+    const token = wx.getStorageSync('token') || ''
     const uploadUrl = `${app.globalData.apiBaseUrl}/api/v1/upload-image`
 
     console.log('上传地址:', uploadUrl)
