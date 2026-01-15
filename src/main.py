@@ -260,8 +260,8 @@ async def upload_image(file: UploadFile = File(...)):
 
         logger.info("文件保存成功")
 
-        # 返回本地访问 URL（开发环境）
-        image_url = f"http://localhost:8000/assets/uploads/{unique_filename}"
+        # 返回图片 URL（使用相对路径，让小程序根据当前apiBaseUrl拼接）
+        image_url = f"/assets/uploads/{unique_filename}"
 
         return {
             "code": 0,
