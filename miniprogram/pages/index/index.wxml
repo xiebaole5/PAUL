@@ -1,6 +1,11 @@
 <!--pages/index/index.wxml-->
 <view class="container">
 
+  <!-- 退出登录按钮 -->
+  <view class="logout-bar">
+    <text class="logout-btn" bindtap="handleLogout">退出登录</text>
+  </view>
+
   <!-- 加载状态 -->
   <view wx:if="{{loading}}" class="loading-overlay">
     <view class="loading-content">

@@ -1,0 +1,56 @@
+<!--pages/login/login.wxml-->
+<view class="login-container">
+  <view class="login-header">
+    <text class="app-title">天虹紧固件</text>
+    <text class="app-subtitle">视频生成系统</text>
+  </view>
+
+  <view class="login-form">
+    <!-- 用户名输入 -->
+    <view class="form-item">
+      <view class="input-wrapper">
+        <text class="input-icon">👤</text>
+        <input
+          class="form-input"
+          placeholder="请输入用户名"
+          value="{{username}}"
+          bindinput="onUsernameInput"
+          placeholder-class="placeholder"
+        />
+      </view>
+    </view>
+
+    <!-- 密码输入 -->
+    <view class="form-item">
+      <view class="input-wrapper">
+        <text class="input-icon">🔒</text>
+        <input
+          class="form-input"
+          type="{{showPassword ? 'text' : 'password'}}"
+          placeholder="请输入密码"
+          value="{{password}}"
+          bindinput="onPasswordInput"
+          placeholder-class="placeholder"
+        />
+        <text class="toggle-password" bindtap="togglePassword">
+          {{showPassword ? '🙈' : '👁️'}}
+        </text>
+      </view>
+    </view>
+
+    <!-- 登录按钮 -->
+    <button class="login-btn" bindtap="handleLogin" disabled="{{loading}}">
+      {{loading ? '登录中...' : '登录'}}
+    </button>
+
+    <!-- 提示信息 -->
+    <view class="tips">
+      <text class="tips-text">使用用户名和密码登录系统</text>
+    </view>
+  </view>
+
+  <!-- 页脚 -->
+  <view class="footer">
+    <text class="footer-text">© 2025 天虹紧固件</text>
+  </view>
+</view>

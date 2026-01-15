@@ -357,5 +357,19 @@ Page({
       path: '/pages/index/index',
       imageUrl: ''
     }
+  },
+
+  // 退出登录
+  handleLogout() {
+    wx.showModal({
+      title: '提示',
+      content: '确定要退出登录吗？',
+      success: (res) => {
+        if (res.confirm) {
+          const app = getApp()
+          app.logout()
+        }
+      }
+    })
   }
 })

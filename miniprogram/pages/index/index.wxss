@@ -6,6 +6,20 @@
   box-sizing: border-box;
 }
 
+.logout-bar {
+  padding: 10rpx 20rpx;
+  text-align: right;
+}
+
+.logout-btn {
+  color: white;
+  font-size: 28rpx;
+  padding: 10rpx 30rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 30rpx;
+  display: inline-block;
+}
+
 .step-container {
   background: white;
   border-radius: 20rpx;
