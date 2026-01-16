@@ -140,7 +140,7 @@ async def generate_script(request: ScriptRequest):
         result_dict = json.loads(result)
 
         return {
-            "code": 0,
+            "success": True,
             "message": "脚本生成成功",
             "data": result_dict
         }
@@ -174,7 +174,7 @@ async def generate_frames(request: FrameImagesRequest):
         result_dict = json.loads(result)
 
         return {
-            "code": 0,
+            "success": True,
             "message": "图片生成成功",
             "data": result_dict
         }
@@ -213,7 +213,7 @@ async def generate_video(request: VideoRequest):
         result_dict = json.loads(result)
 
         return {
-            "code": 0,
+            "success": True,
             "message": "视频生成成功",
             "data": result_dict
         }
@@ -260,16 +260,15 @@ async def upload_image(file: UploadFile = File(...)):
 
         logger.info("文件保存成功")
 
-        # 返回图片 URL（使用相对路径，让小程序根据当前apiBaseUrl拼接）
-        image_url = f"/assets/uploads/{unique_filename}"
+        # 返回图片 URL（使用完整的 HTTP URL，使用 HTTPS 域名，小程序会自动替换为 HTTP IP）
+        # 注意：这里使用 https://tnho-fasteners.com，小程序会替换为 http://47.110.72.148
+        image_url = f"https://tnho-fasteners.com/assets/uploads/{unique_filename}"
 
         return {
-            "code": 0,
+            "success": True,
             "message": "图片上传成功",
-            "data": {
-                "image_url": image_url,
-                "file_key": unique_filename
-            }
+            "image_url": image_url,
+            "file_key": unique_filename
         }
     except Exception as e:
         import traceback
