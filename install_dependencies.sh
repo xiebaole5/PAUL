@@ -1,5 +1,5 @@
 #!/bin/bash
-# 依赖安装脚本
+# 依赖安装脚本 - 使用 --break-system-packages 选项
 # 在服务器47.110.72.148上执行
 
 set -e
@@ -17,17 +17,17 @@ echo "[2] 检查pip版本..."
 pip3 --version
 echo ""
 
-# 升级pip
+# 升级pip（使用 --break-system-packages）
 echo "[3] 升级pip..."
-pip3 install --upgrade pip
+pip3 install --upgrade pip --break-system-packages
 echo ""
 
-# 安装依赖
+# 安装依赖（使用 --break-system-packages）
 echo "[4] 安装项目依赖..."
 echo "这可能需要几分钟时间，请耐心等待..."
 
 if [ -f "requirements.txt" ]; then
-    pip3 install -r requirements.txt
+    pip3 install -r requirements.txt --break-system-packages
     echo ""
     echo "✅ 依赖安装完成"
 else

@@ -45,11 +45,11 @@ echo "[5/7] 安装Python依赖..."
 echo "这可能需要5-10分钟，请耐心等待..."
 
 if [ -f "requirements.txt" ]; then
-    # 升级pip
-    pip3 install --upgrade pip
+    # 升级pip（使用 --break-system-packages）
+    pip3 install --upgrade pip --break-system-packages
 
-    # 安装依赖
-    pip3 install -r requirements.txt
+    # 安装依赖（使用 --break-system-packages）
+    pip3 install -r requirements.txt --break-system-packages
     echo ""
     echo "✅ 依赖安装完成"
 else

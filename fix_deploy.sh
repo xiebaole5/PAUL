@@ -1,10 +1,10 @@
 #!/bin/bash
-# 快速部署脚本 - 使用 --break-system-packages 选项
+# 修复部署脚本 - 使用 --break-system-packages 选项
 # 在服务器47.110.72.148上执行（在 /workspace/projects 目录下）
 
 set -e
 
-echo "=== 快速部署 - 安装依赖并启动服务 ==="
+echo "=== 修复部署 - 安装依赖并启动服务 ==="
 echo ""
 
 # 检查目录
@@ -23,8 +23,12 @@ echo ""
 # 第二步：安装依赖（使用 --break-system-packages）
 echo "[2/3] 安装依赖..."
 echo "这可能需要5-10分钟，请耐心等待..."
+echo ""
 
+# 升级pip
 pip3 install --upgrade pip --break-system-packages
+
+# 安装依赖
 pip3 install -r requirements.txt --break-system-packages
 
 echo ""
