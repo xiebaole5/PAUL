@@ -62,6 +62,19 @@ app.include_router(wechat_callback_router)
 app.include_router(enterprise_wechat_router)
 
 # 请求模型
+class ScriptRequest(BaseModel):
+    """生成脚本请求"""
+    product_name: str
+    product_image_url: str
+    usage_scenario: str
+    theme_direction: str
+
+class FrameImagesRequest(BaseModel):
+    """生成首尾帧图片请求"""
+    script: str
+    product_name: str = "紧固件"
+    product_image_url: str = ""
+
 class VideoGenerateRequest(BaseModel):
     product_name: str
     theme: str = "品质保证"
@@ -231,6 +244,14 @@ async def health_check():
     """健康检查接口"""
     return {"status": "ok"}
 
+@app.get("/api/test")
+async def test_api():
+    """测试接口"""
+    return {
+        "status": "ok",
+        "message": "API test successful"
+    }
+
 @app.post("/api/upload-image", response_model=dict)
 async def upload_image(file: UploadFile = File(...)):
     """
@@ -296,6 +317,92 @@ async def upload_image(file: UploadFile = File(...)):
         return {
             "success": False,
             "message": f"图片上传失败: {str(e)}"
+        }
+
+@app.post("/api/generate-script")
+async def generate_script(request: ScriptRequest):
+    """
+    生成 20 秒广告脚本
+
+    参数：
+    - product_name: 产品名称（必填）
+    - product_image_url: 产品图片 URL（必填）
+    - usage_scenario: 使用场景（必填）
+    - theme_direction: 主题方向（必填）
+
+    返回：
+    - success: 是否成功
+    - message: 消息
+    - data: 脚本内容 { script: "..." }
+    """
+    try:
+        # 导入小程序专用工具
+        from tools.miniprogram_video_tool import generate_ad_script
+
+        # 调用工具生成脚本
+        result = generate_ad_script.invoke({
+            "product_name": request.product_name,
+            "product_image_url": request.product_image_url,
+            "usage_scenario": request.usage_scenario,
+            "theme_direction": request.theme_direction
+        })
+
+        # 解析返回的 JSON
+        result_dict = json.loads(result)
+
+        return {
+            "success": True,
+            "message": "脚本生成成功",
+            "data": result_dict
+        }
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {
+            "success": False,
+            "message": f"脚本生成失败: {str(e)}"
+        }
+
+@app.post("/api/generate-frames")
+async def generate_frames(request: FrameImagesRequest):
+    """
+    生成首尾帧图片（各 2 张供用户选择）
+
+    参数：
+    - script: 视频脚本
+    - product_name: 产品名称
+    - product_image_url: 产品图片 URL
+
+    返回：
+    - success: 是否成功
+    - message: 消息
+    - data: 图片列表 { first_frames: [...], last_frames: [...] }
+    """
+    try:
+        # 导入小程序专用工具
+        from tools.miniprogram_video_tool import generate_frame_images
+
+        # 调用工具生成图片
+        result = generate_frame_images.invoke({
+            "script": request.script,
+            "product_name": request.product_name,
+            "product_image_url": request.product_image_url
+        })
+
+        # 解析返回的 JSON
+        result_dict = json.loads(result)
+
+        return {
+            "success": True,
+            "message": "图片生成成功",
+            "data": result_dict
+        }
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {
+            "success": False,
+            "message": f"图片生成失败: {str(e)}"
         }
 
 @app.post("/api/generate-video", response_model=VideoGenerateResponse)

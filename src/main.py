@@ -112,7 +112,7 @@ async def health():
     """健康检查接口"""
     return {"status": "healthy"}
 
-@app.post("/api/v1/generate-script")
+@app.post("/api/generate-script")
 async def generate_script(request: ScriptRequest):
     """
     生成 20 秒广告脚本
@@ -147,7 +147,7 @@ async def generate_script(request: ScriptRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"脚本生成失败: {str(e)}")
 
-@app.post("/api/v1/generate-frames")
+@app.post("/api/generate-frames")
 async def generate_frames(request: FrameImagesRequest):
     """
     生成首尾帧图片（各 2 张供用户选择）
@@ -181,7 +181,7 @@ async def generate_frames(request: FrameImagesRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"图片生成失败: {str(e)}")
 
-@app.post("/api/v1/generate-video")
+@app.post("/api/generate-video")
 async def generate_video(request: VideoRequest):
     """
     生成 20 秒广告视频
@@ -220,7 +220,7 @@ async def generate_video(request: VideoRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"视频生成失败: {str(e)}")
 
-@app.post("/api/v1/upload-image")
+@app.post("/api/upload-image")
 async def upload_image(file: UploadFile = File(...)):
     """
     上传产品图片
