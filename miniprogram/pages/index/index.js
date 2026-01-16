@@ -119,14 +119,18 @@ Page({
 
           // 后端返回格式: { success: true, message: "图片上传成功", image_url: "..." }
           if (data.success) {
+            // 临时方案：将HTTPS域名替换为HTTP IP地址（开发测试用）
+            const imageUrl = data.image_url.replace('https://tnho-fasteners.com', 'http://47.110.72.148')
+            console.log('图片URL已转换:', data.image_url, '->', imageUrl)
+
             this.setData({
-              'formData.productImageUrl': data.image_url
+              'formData.productImageUrl': imageUrl
             })
             wx.showToast({
               title: '上传成功',
               icon: 'success'
             })
-            console.log('图片URL已保存:', data.image_url)
+            console.log('图片URL已保存:', imageUrl)
           } else {
             console.error('上传失败:', data)
             wx.showToast({
