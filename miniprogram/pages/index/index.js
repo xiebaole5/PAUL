@@ -351,6 +351,75 @@ Page({
     })
   },
 
+  // 下载视频
+  downloadVideo() {
+    if (!this.data.videoUrl) {
+      wx.showToast({
+        title: '视频不存在',
+        icon: 'none'
+      })
+      return
+    }
+
+    wx.showLoading({
+      title: '准备下载...'
+    })
+
+    // 下载视频文件
+    wx.downloadFile({
+      url: this.data.videoUrl,
+      success: (res) => {
+        wx.hideLoading()
+
+        if (res.statusCode === 200) {
+          // 保存到相册
+          wx.saveVideoToPhotosAlbum({
+            filePath: res.tempFilePath,
+            success: () => {
+              wx.showToast({
+                title: '已保存到相册',
+                icon: 'success'
+              })
+            },
+            fail: (err) => {
+              // 可能是权限问题，引导用户授权
+              if (err.errMsg.includes('auth')) {
+                wx.showModal({
+                  title: '需要授权',
+                  content: '需要您授权保存相册权限才能下载视频',
+                  success: (modalRes) => {
+                    if (modalRes.confirm) {
+                      wx.openSetting()
+                    }
+                  }
+                })
+              } else {
+                wx.showToast({
+                  title: '保存失败',
+                  icon: 'none'
+                })
+                console.error('保存视频失败:', err)
+              }
+            }
+          })
+        } else {
+          wx.showToast({
+            title: '下载失败',
+            icon: 'none'
+          })
+        }
+      },
+      fail: (err) => {
+        wx.hideLoading()
+        wx.showToast({
+          title: '下载失败',
+          icon: 'none'
+        })
+        console.error('下载视频失败:', err)
+      }
+    })
+  },
+
   // 重新开始
   reset() {
     this.setData({

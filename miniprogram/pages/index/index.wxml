@@ -152,12 +152,37 @@
 
   <!-- 步骤 3: 视频生成完成 -->
   <view wx:if="{{step === 3}}" class="step-container">
-    <!-- 使用用时注入组件 -->
-    <video-result
-      videoUrl="{{videoUrl}}"
-      bind:sharevideo="onShareVideo"
-      bind:reset="reset"
-    />
+    <view class="step-header">
+      <text class="step-title">✅ 视频生成成功</text>
+      <text class="step-desc">20秒广告视频已生成</text>
+    </view>
+
+    <!-- 视频播放器 -->
+    <view class="video-container">
+      <video
+        class="video-player"
+        src="{{videoUrl}}"
+        controls
+        show-center-play-btn="{{true}}"
+        autoplay="{{false}}"
+        loop="{{false}}"
+        muted="{{false}}"
+      />
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="action-buttons">
+      <button class="primary-btn" bindtap="downloadVideo">下载视频</button>
+      <button class="secondary-btn" bindtap="reset">重新生成</button>
+    </view>
+
+    <!-- 提示信息 -->
+    <view class="tips">
+      <text>• 视频中融入了红色 TNHO 商标（T-N-H-O）</text>
+      <text>• 使用最新图生视频模型</text>
+      <text>• 可用于产品宣传、社交媒体推广</text>
+      <text>• 建议在 WiFi 环境下下载</text>
+    </view>
   </view>
 
 </view>
