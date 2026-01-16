@@ -43,6 +43,18 @@ Page({
     this.setData({
       version: app.globalData.version
     })
+
+    // 测试服务器连接（健康检查）
+    wx.request({
+      url: `${app.globalData.apiBaseUrl}/health`,
+      method: 'GET',
+      success: (res) => {
+        console.log('✅ 健康检查成功:', res.data)
+      },
+      fail: (err) => {
+        console.error('❌ 健康检查失败:', err)
+      }
+    })
   },
 
   // 上传产品图片
