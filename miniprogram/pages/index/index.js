@@ -83,7 +83,7 @@ Page({
 
     const app = getApp()
     const token = wx.getStorageSync('token') || ''
-    const uploadUrl = `${app.globalData.apiBaseUrl}/api/v1/upload-image`
+    const uploadUrl = `${app.globalData.apiBaseUrl}/api/upload-image`
 
     console.log('上传地址:', uploadUrl)
     console.log('文件路径:', filePath)
@@ -168,7 +168,7 @@ Page({
     const app = getApp()
 
     wx.request({
-      url: `${app.globalData.apiBaseUrl}/api/v1/generate-script`,
+      url: `${app.globalData.apiBaseUrl}/api/generate-script`,
       method: 'POST',
       data: {
         product_name: productName,
@@ -224,7 +224,7 @@ Page({
     const app = getApp()
 
     wx.request({
-      url: `${app.globalData.apiBaseUrl}/api/v1/generate-frames`,
+      url: `${app.globalData.apiBaseUrl}/api/generate-frames`,
       method: 'POST',
       data: {
         script: this.data.script,
@@ -304,7 +304,7 @@ Page({
     const app = getApp()
 
     wx.request({
-      url: `${app.globalData.apiBaseUrl}/api/v1/generate-video`,
+      url: `${app.globalData.apiBaseUrl}/api/generate-video`,
       method: 'POST',
       data: {
         script: this.data.script,
