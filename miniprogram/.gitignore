@@ -1,0 +1,27 @@
+# 微信小程序私有配置文件
+project.private.config.json
+
+# 临时文件
+*.tmp
+*.temp
+*.log
+app.txt
+
+# 临时修复文件
+app_fix.js
+quick_fix_dev.js
+fix_app.json
+
+# 缓存文件
+.cache/
+*.cache
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 编辑器配置
+.vscode/
+.idea/
+*.swp
+*.swo
