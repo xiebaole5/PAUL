@@ -43,5 +43,6 @@
   "libVersion": "2.30.4",
   "appid": "wx464504ca7e01b3b1",
   "projectname": "天虹紧固件",
+  "miniprogramRoot": "./miniprogram/",
   "condition": {}
 }
