@@ -119,9 +119,9 @@ Page({
 
           // 后端返回格式: { success: true, message: "图片上传成功", image_url: "..." }
           if (data.success) {
-            // 临时方案：将HTTPS域名替换为HTTP IP地址（开发测试用）
-            const imageUrl = data.image_url.replace('https://tnho-fasteners.com', 'http://47.110.72.148')
-            console.log('图片URL已转换:', data.image_url, '->', imageUrl)
+            // 直接使用服务器返回的图片 URL（已经是 HTTP 格式）
+            const imageUrl = data.image_url
+            console.log('图片URL已保存:', imageUrl)
 
             this.setData({
               'formData.productImageUrl': imageUrl

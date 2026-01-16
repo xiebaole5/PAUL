@@ -260,9 +260,8 @@ async def upload_image(file: UploadFile = File(...)):
 
         logger.info("文件保存成功")
 
-        # 返回图片 URL（使用完整的 HTTP URL，使用 HTTPS 域名，小程序会自动替换为 HTTP IP）
-        # 注意：这里使用 https://tnho-fasteners.com，小程序会替换为 http://47.110.72.148
-        image_url = f"https://tnho-fasteners.com/assets/uploads/{unique_filename}"
+        # 返回图片 URL（使用 HTTP IP 地址，开发测试环境）
+        image_url = f"http://47.110.72.148/assets/uploads/{unique_filename}"
 
         return {
             "success": True,
