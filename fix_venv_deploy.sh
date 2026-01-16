@@ -24,10 +24,10 @@ echo "[3/6] 激活虚拟环境并安装依赖..."
 source venv/bin/activate
 
 # 升级 pip
-pip install --upgrade pip
+pip install --upgrade pip -i https://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com
 
 # 安装依赖
-pip install -r requirements.txt
+pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com
 
 echo "✓ 依赖安装完成"
 
