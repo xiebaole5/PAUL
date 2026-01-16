@@ -117,16 +117,16 @@ Page({
           const data = typeof res.data === 'string' ? JSON.parse(res.data) : res.data
           console.log('解析后的数据:', data)
 
-          // 后端返回格式: { code: 0, data: { image_url: "..." } }
-          if (data.code === 0) {
+          // 后端返回格式: { success: true, message: "图片上传成功", image_url: "..." }
+          if (data.success) {
             this.setData({
-              'formData.productImageUrl': data.data.image_url
+              'formData.productImageUrl': data.image_url
             })
             wx.showToast({
               title: '上传成功',
               icon: 'success'
             })
-            console.log('图片URL已保存:', data.data.image_url)
+            console.log('图片URL已保存:', data.image_url)
           } else {
             console.error('上传失败:', data)
             wx.showToast({
@@ -203,7 +203,7 @@ Page({
       },
       success: (res) => {
         console.log('脚本生成响应:', res.data)
-        if (res.data.code === 0) {
+        if (res.data.success) {
           this.setData({
             script: res.data.data.script,
             step: 1
@@ -259,7 +259,7 @@ Page({
       },
       success: (res) => {
         console.log('图片生成响应:', res.data)
-        if (res.data.code === 0) {
+        if (res.data.success) {
           this.setData({
             firstFrames: res.data.data.first_frames,
             lastFrames: res.data.data.last_frames,
@@ -342,7 +342,7 @@ Page({
       },
       success: (res) => {
         console.log('视频生成响应:', res.data)
-        if (res.data.code === 0) {
+        if (res.data.success) {
           // 尝试从不同的可能位置获取视频 URL
           const videoUrl = res.data.data.video_url ||
                           res.data.data.merged_video_url ||
